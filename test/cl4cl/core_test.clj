@@ -174,3 +174,16 @@
                     (catch ExceptionInfo e (:type (ex-data e)))))))
       (is (= 1 @calls))
       (is @closed))))
+
+(deftest tool-input-nested-too-deeply-is-left-unparsed
+  (let [deep (apply str (repeat 100000 "["))
+        message (core/final-message
+                 [{:type "message_start" :message {:content []}}
+                  {:type "content_block_start" :index 0
+                   :content_block {:type "tool_use" :id "toolu_1" :name "f" :input {}}}
+                  {:type "content_block_delta" :index 0
+                   :delta {:type "input_json_delta" :partial_json deep}}
+                  {:type "content_block_stop" :index 0}])
+        block (first (:content message))]
+    (is (= {} (:input block)))
+    (is (= deep (:cl4cl.stream/partial-json (meta block))))))

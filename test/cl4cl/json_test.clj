@@ -15,3 +15,11 @@
 
 (deftest slashes-are-not-escaped
   (is (= "\"a/b\"" (json/write-str "a/b"))))
+
+(deftest nesting-too-deep-for-the-stack-is-an-ex-info
+  (let [depth 100000
+        text (str (apply str (repeat depth "[")) (apply str (repeat depth "]")))
+        data (reduce (fn [x _] [x]) [] (range depth))
+        type-of #(try (%) (catch clojure.lang.ExceptionInfo e (:type (ex-data e))))]
+    (is (= :cl4cl.error/unknown (type-of #(json/read-str text))))
+    (is (= :cl4cl.error/unknown (type-of #(json/write-str data))))))

@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Fixed
+- JSON nested too deeply for the stack, which a model can produce as a tool input, throws an `ex-info` of type `:cl4cl.error/unknown` instead of a `StackOverflowError`. In a stream the block is treated like a tool call that was cut short: `:input` is left alone and the text stays on the block's metadata.
 - A `retry-after` header is obeyed only when it is a number of seconds from zero up to the retry policy's new optional `:max-retry-after-ms` (default 60000). Before, a large value made the caller sleep for as long as it said, a negative one threw from `Thread/sleep`, and `Infinity` replaced the API's error with an `IllegalArgumentException`.
 
 ## [0.1.1] - 2026-11-20

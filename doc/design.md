@@ -128,6 +128,8 @@ Reading uses `:key-fn keyword` everywhere, including tool inputs.
 
 Writing must not use data.json's default key function, which calls `name` and so drops the namespace part: a tool input key `"a/b"` reads as `:a/b` and would be written back as `"b"`. `cl4cl.json` writes a keyword as its full text without the leading colon, and a string key as is. Round-tripping any response block back into a request is then lossless.
 
+data.json reads and writes recursively, and how deeply a tool input is nested is the model's choice. `cl4cl.json` turns the resulting `StackOverflowError` into an `ex-info` of type `:cl4cl.error/unknown`, because an `Error` would get past a caller's `(catch Exception ...)`.
+
 ## Streaming
 
 `stream` returns a reducible. Nothing is sent until it is reduced, and each reduction makes a new request.
@@ -141,7 +143,7 @@ Writing must not use data.json's default key function, which calls `name` and so
 
 - `text_delta`, `thinking_delta` and `signature_delta` append to their block.
 - `citations_delta` conjoins onto the block's `:citations`.
-- `input_json_delta` appends `partial_json` to a buffer kept in the block's metadata and parsed at `content_block_stop`. If the buffer is not valid JSON, as when `max_tokens` cuts a tool call short, `:input` is left alone and the text stays in the metadata under `:cl4cl.stream/partial-json`.
+- `input_json_delta` appends `partial_json` to a buffer kept in the block's metadata and parsed at `content_block_stop`. If the buffer cannot be read, as when `max_tokens` cuts a tool call short or the model nests the input too deeply for the stack, `:input` is left alone and the text stays in the metadata under `:cl4cl.stream/partial-json`.
 - Deltas are applied by the multimethod `cl4cl.stream/apply-delta`, so a caller can add a method for a delta type cl4cl does not know yet.
 - `message_delta` merges `stop_reason`, `stop_details` and the cumulative `usage`.
 - Unknown event and delta types are ignored.

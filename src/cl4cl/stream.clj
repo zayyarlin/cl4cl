@@ -44,9 +44,10 @@
   (vary-meta block update ::partial-json str partial_json))
 
 (defn- finish-block
-  "Parse the tool input collected for a block, if any. Input that is not
-  valid JSON, as when max_tokens cuts a tool call short, is left on the
-  block's metadata under ::partial-json and :input stays as it was."
+  "Parse the tool input collected for a block, if any. Input that cannot
+  be read, because max_tokens cut the tool call short or because it is
+  nested too deeply, is left on the block's metadata under ::partial-json
+  and :input stays as it was."
   [block]
   (let [partial (::partial-json (meta block))]
     (if (seq partial)

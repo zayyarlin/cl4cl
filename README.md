@@ -243,7 +243,7 @@ Each event is the API's event payload as a map:
 
 Tool input arrives as fragments of one JSON document. `accumulate` joins them and parses the result when the block stops, so the finished block has `:input` as a map.
 
-If the fragments do not form valid JSON, which happens when `:max_tokens` cuts a tool call short, `:input` is left as it was and the raw text is kept on the block's metadata:
+If the fragments cannot be read, which happens when `:max_tokens` cuts a tool call short or the input is nested thousands of levels deep, `:input` is left as it was and the raw text is kept on the block's metadata:
 
 ```clojure
 (let [message (claude/final-message (claude/stream client body))]
