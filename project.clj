@@ -8,4 +8,5 @@
   :profiles {:dev {:source-paths ["dev"]}}
   :test-selectors {:default (complement :integration)
                    :integration :integration}
+  :aliases {"record" ["run" "-m" "cl4cl.dev.cassette"]}
   :repl-options {:init-ns user})

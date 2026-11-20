@@ -28,6 +28,7 @@ Work interactively against the running nREPL server rather than starting a JVM p
 - `lein test` runs all tests except `^:integration` ones; run it before each commit
 - `lein test cl4cl.spec-test` runs one namespace; `lein test :only cl4cl.spec-test/spec-parses` runs one test
 - `lein test :integration` runs live API tests (needs `ANTHROPIC_API_KEY`)
+- `lein record` re-records every cassette in `test/cassettes/` against the real API; `lein record NAME...` records some (needs the key, costs a little)
 - `bb spec:checklist` regenerates `doc/spec-checklist.md`
 - `bb spec:update` fetches the upstream spec and regenerates the checklist
 
@@ -45,6 +46,10 @@ To implement a spec item: write or extend the code, make `verify` pass for the i
 Test inputs come from `cl4cl.dev.spec/sample`, which builds a value from the reference's type definitions. Prefer extending it over hand-writing fixtures.
 
 The procedure for a new upstream spec version is in `doc/design.md` under "Evolving with the API".
+
+## Tests without a key
+
+Three layers run in `lein test` with no API key: unit tests with `http/send!` stubbed, the spec-driven `verify` tests, and `cl4cl.replay-test`, which replays the recorded exchanges in `test/cassettes/` through a local HTTP server. Scenarios are data in `cl4cl.dev.cassette/scenarios`; a new scenario needs `lein record NAME` before the suite passes. Never edit a cassette by hand. If a change to cl4cl alters the request it sends or the value it returns, the replay test fails: decide whether the change is intended, and re-record only if it is.
 
 ## Commits
 

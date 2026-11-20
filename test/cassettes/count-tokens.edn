@@ -1,0 +1,18 @@
+{:request
+ {:method :post,
+  :url "/v1/messages/count_tokens",
+  :headers
+  {"anthropic-version" "2026-10-21",
+   "content-type" "application/json",
+   "x-api-key" "REDACTED"},
+  :timeout-ms 600000,
+  :body
+  "{\"model\":\"claude-haiku-5-5\",\"tools\":[{\"name\":\"get_weather\",\"description\":\"Get the current weather for a city.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"City name\"}},\"required\":[\"city\"]}}],\"messages\":[{\"role\":\"user\",\"content\":\"Use the get_weather tool to check the weather in Paris.\"}]}"},
+ :response
+ {:status 200,
+  :headers
+  {"content-type" "application/json",
+   "request-id" "req_011ChDxxpgTq4FUJoFsbjDZE"},
+  :body "{\"input_tokens\":392}"},
+ :scenario "count-tokens",
+ :result {:value {:input_tokens 392}}}

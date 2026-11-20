@@ -233,7 +233,17 @@ Three more guard the edges:
 
 `(cl4cl.spec-test/verified)` at the REPL returns the items that verify; `spec/implemented.edn` should equal it.
 
-Live tests are tagged `^:integration`, need `ANTHROPIC_API_KEY`, and are excluded from the default `lein test`.
+### Recorded exchanges
+
+The spec says what the API should send; cassettes hold what it did send. `cl4cl.dev.cassette` defines scenarios as data (a name, an operation and a request body). `lein record` runs them against the real API and writes one EDN file each to `test/cassettes/`: the HTTP request cl4cl built (credentials replaced by `REDACTED`), the raw HTTP response (only the content type, request id and retry-after headers are kept), and the value cl4cl returned.
+
+`cl4cl.replay-test` needs no key. For each cassette it starts a local HTTP server that answers with the recorded response, written in 7-byte pieces so lines and multi-byte characters are split across reads. The client runs against it unchanged, so `cl4cl.http` and real sockets are exercised. Two things must hold: the request received equals the recorded one, and the value returned equals the recorded one.
+
+Cassettes catch regressions in cl4cl. They do not catch changes in the API: a cassette is frozen when it is recorded. Never edit one by hand, and never compare a cassette's value with a fresh live call, because model output varies.
+
+### Live tests
+
+Live tests are tagged `^:integration`, need `ANTHROPIC_API_KEY`, and are excluded from the default `lein test`. They and the recordings use Claude Haiku 5.5 to keep the cost down.
 
 ## Evolving with the API
 
@@ -244,13 +254,14 @@ A spec change is handled as a data change first and a code change second.
 3. **Run the tests.** Removed items that were implemented fail `implemented-items-are-in-the-spec`. The robustness test shows whether new events or blocks already pass through.
 4. **Commit the refresh by itself**, so the mechanical change is reviewable apart from the code.
 5. **Implement each new item at the REPL**: extend the code or the `verify` method, add the item to `spec/implemented.edn`, regenerate the checklist, and commit per group of related items.
-6. **Bump the default `anthropic-version` separately.** A new version shows up as an unchecked item under "API version". It can remove behaviour, so it follows the migration guide linked from `spec/upstream/versioning.md` and gets its own commit.
+6. **Re-record the cassettes** with `lein record` when a key is available, add scenarios for new behaviour worth pinning, and review the cassette diff. Commit it by itself.
+7. **Bump the default `anthropic-version` separately.** A new version shows up as an unchecked item under "API version". It can remove behaviour, so it follows the migration guide linked from `spec/upstream/versioning.md` and gets its own commit.
 
 Because most of the API passes through cl4cl as data, a typical update needs no code at all: new parameters, blocks and tools verify with the existing methods and only move into `implemented.edn`.
 
 ### Automating it with a coding agent
 
-The pipeline is built so an agent can run it without judgment calls until step 5:
+The pipeline is built so an agent can run it without judgment calls until step 5. Steps 1 to 5 need no API key; re-recording and the live tests do.
 
 - A scheduled agent runs steps 1 to 3. If the checklist diff is empty it stops.
 - Otherwise it opens a pull request containing the refresh commit, with the checklist diff as the description.

@@ -1,0 +1,28 @@
+{:request
+ {:method :post,
+  :url "/v1/messages",
+  :headers
+  {"anthropic-version" "2026-10-21",
+   "content-type" "application/json",
+   "x-api-key" "REDACTED"},
+  :body
+  "{\"model\":\"not-a-model\",\"max_tokens\":16,\"messages\":[{\"role\":\"user\",\"content\":\"Hi\"}],\"stream\":true}"},
+ :response
+ {:status 404,
+  :headers
+  {"content-type" "application/json",
+   "request-id" "req_011ChDxw372TQCt55vuJ6gsF"},
+  :body
+  "{\"type\":\"error\",\"error\":{\"type\":\"not_found_error\",\"message\":\"model: not-a-model\"},\"request_id\":\"req_011ChDxw372TQCt55vuJ6gsF\"}"},
+ :scenario "stream-error-not-found",
+ :result
+ {:error
+  {:type :cl4cl.error/not-found,
+   :status 404,
+   :error-type "not_found_error",
+   :message "model: not-a-model",
+   :request-id "req_011ChDxw372TQCt55vuJ6gsF",
+   :body
+   {:type "error",
+    :error {:type "not_found_error", :message "model: not-a-model"},
+    :request_id "req_011ChDxw372TQCt55vuJ6gsF"}}}}
