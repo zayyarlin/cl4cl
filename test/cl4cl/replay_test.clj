@@ -16,15 +16,13 @@
           :let [recorded (cassette/load-cassette name)
                 replayed (cassette/replay scenario recorded)]]
     (testing name
-      (testing "cl4cl sends the request it sent when recording"
-        (is (= (cassette/comparable-request (:request recorded))
-               (cassette/comparable-request (:request replayed)))))
+      (testing "cl4cl sends the requests it sent when recording"
+        (is (= (map (comp cassette/comparable-request :request) (:exchanges recorded))
+               (map cassette/comparable-request (:requests replayed)))))
       (testing "cl4cl returns what it returned when recording"
         (is (= (:result recorded) (:result replayed))))
-      (when-let [id (get-in recorded [:response :headers "request-id"])]
-        (testing "the request id is reported"
-          (let [{:keys [value error]} (:result replayed)]
-            (is (= id (or (:request-id error)
-                          (:cl4cl/request-id (meta value))
-                          ;; a stream has no response map to carry it
-                          (when (:events value) id))))))))))
+      (when-let [id (get-in recorded [:exchanges 0 :response :headers "request-id"])]
+        (let [{:keys [value error]} (:result replayed)]
+          (when (or error (:cl4cl/status (meta value)))
+            (testing "the request id is reported"
+              (is (= id (or (:request-id error) (:cl4cl/request-id (meta value))))))))))))

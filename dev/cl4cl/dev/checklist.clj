@@ -23,6 +23,8 @@
     "A block of this type reaches the wire unchanged."]
    [:tool "Tool definitions"
     "A tool of this type reaches the wire unchanged."]
+   [:count-tokens-field "Count tokens: response fields"
+    "The field is returned unchanged."]
    [:response-field "Response: Message fields"
     "The field is returned unchanged, and assembled correctly from a stream."]
    [:response-block "Response content blocks"
@@ -33,6 +35,16 @@
     "The event is parsed and folded into the final message."]
    [:stream-delta "Stream content block deltas"
     "The delta is folded into its content block."]
+   [:batch-param "Message Batches: create body parameters"
+    "A value of the parameter's type reaches the wire unchanged."]
+   [:batch-list-param "Message Batches: list query parameters"
+    "The parameter is sent in the query string."]
+   [:batch-field "Message Batches: batch fields"
+    "The field is returned unchanged by every function that returns a batch."]
+   [:batch-list-field "Message Batches: list response fields"
+    "The field is returned unchanged."]
+   [:batch-result "Message Batches: result types"
+    "A result of this type is read from the results stream unchanged."]
    [:error-type "Error types"
     "The error becomes an `ex-info` with the documented `:type`."]
    [:error-code "Error codes (`error.details.error_code`)"

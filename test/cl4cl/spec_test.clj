@@ -2,7 +2,8 @@
   "Ties cl4cl to the upstream spec. Each item in spec/implemented.edn must
   exist in the spec and pass the `verify` method for its kind. The inputs
   come from `spec/sample`, so they follow the spec as it changes."
-  (:require [cl4cl.core :as core]
+  (:require [cl4cl.batches :as batches]
+            [cl4cl.core :as core]
             [cl4cl.dev.checklist :as checklist]
             [cl4cl.dev.spec :as spec]
             [cl4cl.error :as error]
@@ -105,19 +106,30 @@
    :headers {}
    :body (json/write-str {:type "error" :error error :request_id "req_1"})})
 
-(defn- requests-sent
-  "The HTTP request maps that calling f sends, with the network stubbed out."
-  [f]
+(defn- sample-returned
+  "A sample of what an endpoint's Returns section describes."
+  [endpoint]
+  (spec/sample @reference (first (:nodes (spec/section @reference endpoint "Returns")))))
+
+(defn- answering
+  "Call f with the network stubbed to answer 200 with the given body
+  text. Returns {:sent [request maps] :value what-f-returned}."
+  [body f]
   (let [sent (atom [])]
     (with-redefs [http/send! (fn [_ request as]
                                (swap! sent conj request)
                                {:status 200
                                 :headers {}
                                 :body (case as
-                                        :string "{}"
-                                        :stream (ByteArrayInputStream. (byte-array 0)))})]
-      (f))
-    @sent))
+                                        :string body
+                                        :stream (ByteArrayInputStream. (.getBytes ^String body "UTF-8")))})]
+      (let [value (f)]
+        {:sent @sent :value value}))))
+
+(defn- requests-sent
+  "The HTTP request maps that calling f sends, with the network stubbed out."
+  [f]
+  (:sent (answering "{}" f)))
 
 ;; --- verify: one method per kind of spec item ---
 
@@ -135,10 +147,17 @@
   "The public functions that call each endpoint."
   {"POST /v1/messages"              [#(core/create client {})
                                      #(run! identity (core/stream client {}))]
-   "POST /v1/messages/count_tokens" [#(core/count-tokens client {})]})
+   "POST /v1/messages/count_tokens" [#(core/count-tokens client {})]
+   "POST /v1/messages/batches"      [#(batches/create client {})]
+   "GET /v1/messages/batches"       [#(batches/list client)]
+   "GET /v1/messages/batches/{message_batch_id}"         [#(batches/retrieve client "msgbatch_1")]
+   "POST /v1/messages/batches/{message_batch_id}/cancel" [#(batches/cancel client "msgbatch_1")]
+   "DELETE /v1/messages/batches/{message_batch_id}"      [#(batches/delete client "msgbatch_1")]
+   "GET /v1/messages/batches/{message_batch_id}/results" [#(run! identity (batches/results client "msgbatch_1"))]})
 
 (defmethod verify :endpoint [{:keys [id]}]
   (let [[verb path] (str/split id #" ")
+        path (str/replace path "{message_batch_id}" "msgbatch_1")
         calls (endpoint-calls id)]
     (and (seq calls)
          (every? (fn [call]
@@ -165,6 +184,48 @@
 (defmethod verify :tool [{:keys [id]}]
   (when-some [tool (sample-variant "Tool Union" id)]
     (passes-through? {:tools [tool]} {})))
+
+(defmethod verify :count-tokens-field [{:keys [id]}]
+  (let [counted (sample-returned "Count tokens in a Message")]
+    (and (contains? counted (keyword id))
+         (= counted (:value (answering (json/write-str counted) #(core/count-tokens client {})))))))
+
+(defmethod verify :batch-param [{:keys [id]}]
+  (when-some [v (some->> (:nodes (spec/section @reference "Create a Message Batch" "Body parameters"))
+                         (filter #(= id (:name %)))
+                         first
+                         (spec/sample @reference))]
+    (let [body {(keyword id) v}]
+      (= [body] (map wire (requests-sent #(batches/create client body)))))))
+
+(defmethod verify :batch-list-param [{:keys [id]}]
+  (let [[{:keys [url]}] (requests-sent #(batches/list client {(keyword id) "a b"}))]
+    (= (str (:base-url client) "/v1/messages/batches?" id "=a+b") url)))
+
+(defmethod verify :batch-field [{:keys [id]}]
+  (let [batch (sample-returned "Create a Message Batch")
+        text (json/write-str batch)]
+    (and (contains? batch (keyword id))
+         (every? #(= batch (:value (answering text %)))
+                 [#(batches/create client {})
+                  #(batches/retrieve client "msgbatch_1")
+                  #(batches/cancel client "msgbatch_1")]))))
+
+(defmethod verify :batch-list-field [{:keys [id]}]
+  (let [page (spec/sample @reference
+                          {:type "object"
+                           :children (:nodes (spec/section @reference "List Message Batches" "Returns"))})]
+    (and (contains? page (keyword id))
+         (= page (:value (answering (json/write-str page) #(batches/list client)))))))
+
+(defmethod verify :batch-result [{:keys [id]}]
+  (let [node (first (:nodes (spec/section @reference "Retrieve Message Batch results" "Returns")))
+        variant (some->> (spec/variant (spec/field node "result") id) (spec/sample @reference))
+        results [{:custom_id "a" :result variant} {:custom_id "b" :result variant}]
+        jsonl (str (str/join "\n" (map json/write-str results)) "\n")]
+    (and variant
+         (= id (:type variant))
+         (= results (:value (answering jsonl #(into [] (batches/results client "msgbatch_1"))))))))
 
 (defmethod verify :response-field [{:keys [id]}]
   (let [message (sample-type "Message")]
@@ -349,6 +410,8 @@
                 {:kind :request-param :id "not_a_param"}
                 {:kind :response-block :id "not_a_block"}
                 {:kind :endpoint :id "GET /v1/not_an_endpoint"}
+                {:kind :batch-result :id "result_from_the_future"}
+                {:kind :batch-field :id "not_a_field"}
                 {:kind :api-version :id "2099-01-01"}
                 {:kind :kind-from-the-future :id "x"}]]
     (is (not (verify item)) (str (spec/item-key item) " should not verify"))))

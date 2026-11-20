@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 cl4cl ("Claude for Clojure") is a pure Clojure client for the Claude Messages API over raw HTTP: no Java SDK, and only `java.net.http` plus `org.clojure/data.json` at runtime. `doc/design.md` is the design and must be read before changing library code.
 
-Only `cl4cl.http` touches the network. `cl4cl.core/request` and `response` are pure, and `create`, `count-tokens` and `stream` are thin compositions around them; `cl4cl.sse`, `cl4cl.stream`, `cl4cl.json` and `cl4cl.error` are pure data transformations.
+Only `cl4cl.http` touches the network. `cl4cl.core/request` and `response` are pure, and `execute` and `lines` do the sending, and every endpoint function (`create`, `count-tokens`, `stream`, everything in `cl4cl.batches`) is a one-line composition of those; `cl4cl.sse`, `cl4cl.stream`, `cl4cl.json` and `cl4cl.error` are pure data transformations.
 
 ## Design principle
 

@@ -52,6 +52,12 @@
     (let [headers (:headers (core/request (core/client {:auth-token "t"}) {}))]
       (is (= "Bearer t" (headers "authorization")))
       (is (not (contains? headers "x-api-key")))))
+  (testing "a request without a body, with a query"
+    (let [r (core/request client nil {:method :get :path "/v1/x" :query {:limit 2 :after_id "a b&c" :skip nil}})]
+      (is (= :get (:method r)))
+      (is (= "https://api.anthropic.com/v1/x?limit=2&after_id=a+b%26c" (:url r)))
+      (is (not (contains? r :body)))
+      (is (not (contains? (:headers r) "content-type")))))
   (testing "a trailing slash on the base URL is harmless"
     (is (= "http://h/v1/messages" (:url (core/request (assoc client :base-url "http://h/") {}))))))
 

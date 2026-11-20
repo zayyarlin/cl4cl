@@ -8,7 +8,8 @@
     (ask \"Hi\" {:model \"claude-sonnet-5-5\"}) ; or for one call
 
   These are development helpers, not part of the library. The API key is read from .env (ANTHROPIC_API_KEY=...) or the environment."
-  (:require [cl4cl.core :as claude]
+  (:require [cl4cl.batches :as batches]
+            [cl4cl.core :as claude]
             [cl4cl.dev.env :as env]
             [cl4cl.stream :as stream]
             [clojure.pprint :refer [pprint]]

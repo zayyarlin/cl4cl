@@ -4,7 +4,7 @@ Claude for Clojure: the Claude Messages API as functions over plain data.
 
 cl4cl talks to the API over raw HTTP. It needs JDK 11 or later and has one dependency besides Clojure, `org.clojure/data.json`. Requests and responses are ordinary maps that mirror the API's JSON, so anything in the [API reference](https://platform.claude.com/docs/en/api/messages) works without waiting for a library release.
 
-Status: not released yet. Messages, streaming and token counting work; Message Batches do not. `doc/spec-checklist.md` lists every part of the API reference and whether it is implemented.
+Status: not released yet. Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
 ## Usage
 
@@ -83,6 +83,35 @@ A failed call throws an `ex-info`. Its `:type` is a keyword in a hierarchy, so t
 ```
 
 Retryable failures (rate limits, overload, server errors, lost connections) are retried twice with backoff before they reach you. Change that with `(assoc client :retry {:max 5 :base-ms 500 :cap-ms 8000})`.
+
+### Message Batches
+
+```clojure
+(require '[cl4cl.batches :as batches])
+
+(def batch
+  (batches/create client
+    {:requests [{:custom_id "q1" :params {:model "claude-opus-5-5" :max_tokens 16000
+                                          :messages [{:role "user" :content "..."}]}}]}))
+
+(batches/retrieve client (:id batch))        ; poll until :processing_status is "ended"
+(into [] (batches/results client (:id batch)))
+;; => [{:custom_id "q1" :result {:type "succeeded" :message {...}}}]
+
+(batches/list client {:limit 20})            ; a page: {:data [...] :has_more ... :last_id ...}
+(batches/cancel client (:id batch))
+(batches/delete client (:id batch))
+```
+
+`results` is a reducible, like `stream`. Results come in no particular order; match them by `:custom_id`.
+
+### Other endpoints
+
+`request` builds a call to any path, `execute` sends it and parses the reply, and `lines` gives a reducible over a line-based reply:
+
+```clojure
+(claude/execute client (claude/request client nil {:method :get :path "/v1/models" :query {:limit 5}}))
+```
 
 ### Your own HTTP client
 

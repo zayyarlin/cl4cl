@@ -3,7 +3,8 @@
   `lein test :integration`. Needs ANTHROPIC_API_KEY in .env or the
   environment. Uses Claude Haiku 5.5 to keep the cost down; set
   CL4CL_MODEL to test against another model."
-  (:require [cl4cl.core :as core]
+  (:require [cl4cl.batches :as batches]
+            [cl4cl.core :as core]
             [cl4cl.dev.env :as env]
             [cl4cl.error :as error]
             [clojure.test :refer [deftest is]]))
@@ -36,6 +37,11 @@
 
 (deftest ^:integration count-tokens
   (is (pos? (:input_tokens (core/count-tokens (client) (dissoc body :max_tokens))))))
+
+(deftest ^:integration batches-list
+  (let [page (batches/list (client) {:limit 1})]
+    (is (vector? (:data page)))
+    (is (boolean? (:has_more page)))))
 
 (deftest ^:integration errors
   (let [data (try (core/create (client) (assoc body :model "not-a-model"))

@@ -2,7 +2,7 @@
 
 cl4cl ("Claude for Clojure") is a pure Clojure client for the Claude Messages API over raw HTTP. It does not wrap the Java SDK.
 
-Status: v0.1 is implemented as described here. `doc/spec-checklist.md` shows what is covered; the Message Batches endpoints are the part that is not.
+Status: implemented as described here, including Message Batches. `doc/spec-checklist.md` shows what is covered.
 
 ## Principles
 
@@ -74,6 +74,15 @@ Every call takes an optional third argument of per-call options, kept out of the
 
 A caller who wants a different HTTP client, a proxy, request signing or logging uses these two functions around their own transport. That is the whole extension mechanism; there is no client protocol to implement.
 
+Two more public functions do the sending, and every endpoint function is a one-line composition of them with `request`:
+
+```clojure
+(claude/execute client http-request)      ; send, retry, and return `response` of the reply
+(claude/lines client http-request xf)     ; a reducible over the reply's lines, through transducer xf
+```
+
+`create` is `execute` of a request; `stream` is `lines` with the SSE transducer; `cl4cl.batches/results` is `lines` with a JSON-per-line transducer. A caller reaches an endpoint cl4cl has no function for the same way, with `:path`, `:method` and `:query` in the options.
+
 ### Client
 
 `client` returns an immutable map. It holds configuration and one shared `HttpClient`.
@@ -106,6 +115,7 @@ Callers continue a conversation by appending `{:role "assistant" :content (:cont
 | Namespace | Responsibility | Pure? |
 |---|---|---|
 | `cl4cl.core` | Public API | |
+| `cl4cl.batches` | Message Batches, built only on `cl4cl.core`'s public functions | |
 | `cl4cl.http` | Send a request map; retry | No |
 | `cl4cl.json` | data.json read/write with the key rules below | Yes |
 | `cl4cl.sse` | Lines to `{:event ... :data ...}` | Yes |
@@ -198,7 +208,7 @@ A streaming call is retried only if it fails before the first event has been han
 The upstream Messages API reference is vendored in `spec/upstream/` (four markdown files; `messages.md` is the full reference with every type). Anthropic does not publish a machine-readable OpenAPI document at a public URL, but the reference is generated from one and has a regular shape, so `cl4cl.dev.spec` parses it into data.
 
 - `spec/load-spec` returns the documents as sections of bullet trees.
-- `spec/items` flattens what cl4cl has to handle into maps identified by `[kind id]`, for example `[:stream-event "message_start"]`. There are 158 items today across 14 kinds: endpoints, headers, body parameters, content blocks, tools, response fields, stop reasons, stream events and deltas, error types and codes, and the API version.
+- `spec/items` flattens what cl4cl has to handle into maps identified by `[kind id]`, for example `[:stream-event "message_start"]`. There are 181 items today across 20 kinds: endpoints, headers, body parameters, content blocks, tools, response fields, stop reasons, stream events and deltas, batch parameters, fields and result types, error types and codes, and the API version.
 - `spec/implemented.edn` is the set of items cl4cl implements.
 - `doc/spec-checklist.md` is rendered from those two by `bb spec:checklist`. It is never edited by hand.
 
@@ -216,7 +226,9 @@ Tests are driven by the spec, not by hand-written examples of what the author re
 | Stream events and deltas | Generate the event from its type tree, render it as SSE text, run it through `cl4cl.sse` and `accumulate`, and assert the message holds the sample content |
 | Response fields and blocks, stop reasons | Generate a response body; assert `response` returns it unchanged and that the streamed form accumulates to the same value |
 | Error types and codes | Generate the error body with its documented status; assert the `ex-data` |
-| Endpoints, headers, API version | Assert on the request map from `request` |
+| Endpoints | Call the public function with the network stubbed; assert the method and URL it sends |
+| Headers, API version | Assert on the request map from `request` |
+| Batch parameters, fields and results | Generate the value; assert it reaches the wire, or comes back from a stubbed reply, unchanged |
 
 Four tests hold the system together:
 
@@ -235,9 +247,9 @@ Three more guard the edges:
 
 ### Recorded exchanges
 
-The spec says what the API should send; cassettes hold what it did send. `cl4cl.dev.cassette` defines scenarios as data (a name, an operation and a request body). `lein record` runs them against the real API and writes one EDN file each to `test/cassettes/`: the HTTP request cl4cl built (credentials replaced by `REDACTED`), the raw HTTP response (only the content type, request id and retry-after headers are kept), and the value cl4cl returned.
+The spec says what the API should send; cassettes hold what it did send. `cl4cl.dev.cassette` defines scenarios as data (a name, an operation and a request body). `lein record` runs them against the real API and writes one EDN file each to `test/cassettes/`: every HTTP exchange in order, as the request cl4cl built (credentials replaced by `REDACTED`) and the raw response (only the content type, request id and retry-after headers are kept), plus the value cl4cl returned. A batch scenario is many exchanges: create, the polls until it ends, results, list and delete.
 
-`cl4cl.replay-test` needs no key. For each cassette it starts a local HTTP server that answers with the recorded response, written in 7-byte pieces so lines and multi-byte characters are split across reads. The client runs against it unchanged, so `cl4cl.http` and real sockets are exercised. Two things must hold: the request received equals the recorded one, and the value returned equals the recorded one.
+`cl4cl.replay-test` needs no key. For each cassette it starts a local HTTP server that answers each request with the next recorded response, written in 7-byte pieces so lines and multi-byte characters are split across reads. The client runs against it unchanged, so `cl4cl.http` and real sockets are exercised. Two things must hold: the requests received equal the recorded ones, and the value returned equals the recorded one.
 
 Cassettes catch regressions in cl4cl. They do not catch changes in the API: a cassette is frozen when it is recorded. Never edit one by hand, and never compare a cassette's value with a fresh live call, because model output varies.
 
@@ -272,8 +284,8 @@ The agent's instructions belong in a project skill once the first manual update 
 
 ## Scope
 
-**v0.1:** `client`, `request`, `response`, `create`, `stream`, `final-message`, `count-tokens`, errors, retries, beta headers.
+**Done:** `client`, `request`, `response`, `execute`, `lines`, `create`, `stream`, `final-message`, `count-tokens`, Message Batches, errors, retries, beta headers.
 
-**Later:** Message Batches (the six endpoints already in the checklist), a tool-runner namespace, Files, the Models API.
+**Later:** a tool-runner namespace, Files, the Models API. Until then `request` with `:path` reaches them.
 
 **Not planned:** Bedrock, Vertex or Foundry clients.

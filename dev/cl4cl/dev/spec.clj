@@ -193,9 +193,11 @@
     {:kind :error-type :id type :status (parse-long status)}))
 
 (defn- error-codes
-  "The values of error.details.error_code that an endpoint section lists."
-  [sections & titles]
-  (for [line (:lines (apply section sections (concat titles ["Errors"])))
+  "The values of error.details.error_code that the endpoints list."
+  [sections]
+  (for [{:keys [path lines]} sections
+        :when (= "Errors" (peek path))
+        line lines
         :let [[_ code status] (re-find #"^- `(\w+)` \(HTTP status (\d+)\)" line)]
         :when code]
     {:kind :error-code :id code :status (parse-long status)}))
@@ -227,16 +229,19 @@
   "Every checkable item in the spec, in a stable order, as maps with at
   least :kind and :id. [kind id] identifies an item across spec versions."
   [{:keys [messages errors streaming versioning]}]
-  (let [dt (partial domain-type messages)]
+  (let [dt (partial domain-type messages)
+        nodes (fn [& titles] (:nodes (apply section messages titles)))
+        returned (fn [& titles] (first (apply nodes (concat titles ["Returns"]))))]
     (vec
      (distinct
       (concat
        (api-versions versioning)
        (endpoints messages)
-       (named :request-header (:nodes (section messages "Create a Message" "Headers")))
-       (named :request-param (:nodes (section messages "Create a Message" "Body parameters")))
-       (named :count-tokens-param (:nodes (section messages "Count tokens in a Message" "Body parameters")))
+       (named :request-header (nodes "Create a Message" "Headers"))
+       (named :request-param (nodes "Create a Message" "Body parameters"))
+       (named :count-tokens-param (nodes "Count tokens in a Message" "Body parameters"))
        (named :response-field (:children (dt "Message")))
+       (named :count-tokens-field (:children (returned "Count tokens in a Message")))
        (members :stop-reason (dt "Stop Reason"))
        (members :stream-event (dt "Raw Message Stream Event"))
        (extra-stream-events streaming)
@@ -244,8 +249,12 @@
        (members :response-block (dt "Content Block"))
        (members :request-block (dt "Content Block Param"))
        (members :tool (dt "Tool Union"))
+       (named :batch-param (nodes "Create a Message Batch" "Body parameters"))
+       (named :batch-list-param (nodes "List Message Batches" "Query parameters"))
+       (named :batch-field (:children (returned "Create a Message Batch")))
+       (named :batch-list-field (nodes "List Message Batches" "Returns"))
+       (members :batch-result (field (returned "Retrieve Message Batch results") "result"))
        (error-types errors)
-       (error-codes messages "Create a Message")
-       (error-codes messages "Count tokens in a Message"))))))
+       (error-codes messages))))))
 
 (defn item-key [{:keys [kind id]}] [kind id])

@@ -1,0 +1,28 @@
+{:scenario "batch-error-not-found",
+ :exchanges
+ [{:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_does_not_exist",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 404,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDybzEDZgM5FxEzRGZV7"},
+    :body
+    "{\"type\":\"error\",\"error\":{\"type\":\"not_found_error\",\"message\":\"Message Batch `msgbatch_does_not_exist` not found.\"},\"request_id\":\"req_011ChDybzEDZgM5FxEzRGZV7\"}"}}],
+ :result
+ {:error
+  {:type :cl4cl.error/not-found,
+   :status 404,
+   :error-type "not_found_error",
+   :message "Message Batch `msgbatch_does_not_exist` not found.",
+   :request-id "req_011ChDybzEDZgM5FxEzRGZV7",
+   :body
+   {:type "error",
+    :error
+    {:type "not_found_error",
+     :message "Message Batch `msgbatch_does_not_exist` not found."},
+    :request_id "req_011ChDybzEDZgM5FxEzRGZV7"}}}}

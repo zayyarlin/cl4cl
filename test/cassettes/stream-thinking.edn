@@ -1,20 +1,21 @@
-{:request
- {:method :post,
-  :url "/v1/messages",
-  :headers
-  {"anthropic-version" "2026-10-21",
-   "content-type" "application/json",
-   "x-api-key" "REDACTED"},
-  :body
-  "{\"model\":\"claude-haiku-5-5\",\"max_tokens\":4096,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\"},\"output_config\":{\"effort\":\"high\"},\"messages\":[{\"role\":\"user\",\"content\":\"Three people split a bill of 97.50 so that each pays 2.50 more than the one before. What does each pay? Reason it out, then answer in one line.\"}],\"stream\":true}"},
- :response
- {:status 200,
-  :headers
-  {"content-type" "text/event-stream; charset=utf-8",
-   "request-id" "req_011ChDxvdUTtgNECfMJ4ue6H"},
-  :body
-  "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_011ChDxvdqYS2StrQivXjGJN\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":56,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":5,\"service_tier\":\"standard\",\"inference_geo\":\"global\",\"speed\":\"standard\"},\"diagnostics\":null}               }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"}            }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"I'm set\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ting up the\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" three am\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ounts as a, a+2\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\".5, and a+5,\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" which sum\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" to 97.5 and give\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" a\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" = 30,\"}         }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" so the sh\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ares are 30, 32.\"}        }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"50, and 35. The user\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" w\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ants the\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" reasoning sh\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"own and\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" then a one-line answer,\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" so I'll keep it\"}        }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" brief.\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"\\n\\n\"}      }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"CAQS6AYKEAgUGAI4AUIIdGhpbmtpbmcSDI+/1XE2sH1LAo3nIRoMG8w9QM8LRR//KQC9IjBxb7583UaHQX7NVP8jBRxPZULN3VXCJElEU2U1rhTdPH2J1lBOESCi9JZYe+ul7tkqhQaRDugh4uUjUD3oyncMqQowdnCkSISRiapDZsobjWMpY9pk4xBLfKl7RfvlRhGYvi+JI0pc8zLXGkN2cJZbPuBYWngEM1p/q12m6TRChs20Z6OqTEJIRwGc65tl2+m4U2vxMyTAzJ9R9n2/4AgwVfcSfth9NeZtgmr8NNULnWk/dFy6SiyE6H4TKWb5QG2MmtRrimn8aVoZMOqiyAb84XH30yDgLS4Cdw7SAy6Di0DL4DB9deSP0O/m6BVXzsiFuDLQIec9kH9bTabhh98pHMF6MQeFcTM0XLeR8sR5h7Umnlzodyi1dUxS6KG/tOhqd1X4gzLs7ZUK/u3MvKkfVTIexfJfC39Zc1zVAoPVWvSjgYNKaFUvo296/bRdWRbhD133Xi+V6f9Uv8D/z3XK8EI4qfKc6b7IgyBl4CoGqj4epiyYGC1OzAGua7OMZN59aAPjh0fXXPPi7g4+RWIQwX2zhfaKijJO/xDWwB+cK/7ptzNhnEJ7Y3jbAHr0loaEL9r7G9OB/CcKP4pW0mQ4k2qPmB0nc0u7fkEXQ6jOA5/IFEVzDMQVNFxlyJcE67q+9BESJJJZekbwRBbQI66a/xxjEklppsrtRGX6GmNiRbuVEs42V4TfAhDx/TL5Q+8qG6cGOofcWSIIdk8VU36mDCd47YwqIjcgId29OVFNQnNlFBk8ld1akN6IEgGnR/q+T3p4Dp/kgEvZisKKVOvled448bdgABjsJ0hoZNcnJnKGNOQmH6LeHYYl9zixsXFkp3g3phlxU3Kqd08yvwpc2Kc3yu3xzsts3uyE5aAQn7vZOqCKwIjA9BH9IjK78ia19VyXOayXOgaOGdMznYDe2bO3RvPgSZdrRvf3GKYlZCGLeiAo6D3Xu2RR/mVcZyoPDHzJl7pSRVytmzXjdZqQAaaSMNmyYozm1bNITeY+ICR/k55pB1oJkyPusjUYFbsbBLCMQqtk/YkfLRmSmrSmlt1mA5Am4IxrBKsqgpVeZvwC0FfjZZD54nf5rfYqt9sA6kj9BoAOvRgB\"}  }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0        }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Let the first\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" person\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" pay x\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\". The\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" second pays x + 2.\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"50,\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" and the third pays x + \"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"5.00.\"}      }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" Together\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" they\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" p\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ay 3x + 7.\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"50 = 97.50,\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" so 3x = 90 \"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"and x = 30. That g\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ives \"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"30.\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"00, 32.50, and\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" 35.00,\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" which sums to 97.50\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\".\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"\\n\\nAnswer: The three\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" people pay \"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"30.00, 32.50\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\", and 35.00.\"}  }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1}\n\nevent: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":56,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":234,\"output_tokens_details\":{\"thinking_tokens\":112}}   }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"           }\n\n"},
- :scenario "stream-thinking",
+{:scenario "stream-thinking",
+ :exchanges
+ [{:request
+   {:method :post,
+    :url "/v1/messages",
+    :headers
+    {"anthropic-version" "2026-10-21",
+     "content-type" "application/json",
+     "x-api-key" "REDACTED"},
+    :body
+    "{\"model\":\"claude-haiku-5-5\",\"max_tokens\":4096,\"thinking\":{\"type\":\"adaptive\",\"display\":\"summarized\"},\"output_config\":{\"effort\":\"high\"},\"messages\":[{\"role\":\"user\",\"content\":\"Three people split a bill of 97.50 so that each pays 2.50 more than the one before. What does each pay? Reason it out, then answer in one line.\"}],\"stream\":true}"},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "text/event-stream; charset=utf-8",
+     "request-id" "req_011ChDybbZxnnWNdj4ufGZUR"},
+    :body
+    "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_011ChDybbuHoXF8VCBxJtmR8\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":56,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":5,\"service_tier\":\"standard\",\"inference_geo\":\"global\",\"speed\":\"standard\"},\"diagnostics\":null}         }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"} }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"I'm set\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ting the\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" three am\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ounts as\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" x, x+2.5,\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" and x+5, which s\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ums to 97.5 and\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" works\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" out to x = 30,\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" gi\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"ving 30, 32.50\"}         }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\", and 35.00,\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" and I've\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" checked that they\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" add back\"}        }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" to\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" 97.5. The request\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" is\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" to reason bri\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"efly and then give\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" a one-line answer, so\"}}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" that\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"'s the\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" format I'll use.\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"\\n\\n\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"CAQS0AYKEAgUGAI4AUIIdGhpbmtpbmcSDJUjxZOU589R/zYrhxoM6lu9LRB3McRXnqpCIjC3aPfHYxOTpBCpUsoBKkgraG2KtkeJXewoNF+Hd2lsDdhG+PxW52/agPILDsXdRXAq7QXpQKyp2ARSNoDVK3QYOIoUtBMOKu+UNSHGkC4nSKcrTz8H/7pUlcZO2oi6ds9gD8+PMM4dkwY5spZ2AoQ92IUQYBZhjYqyKWal1M5xN3AEbQCEfQPKNwhFU85Z92T+s2BnT9KrurMim7jja/dPrrS70c0Lz2GfrbCM2DQCVsAJJA4rulXysFzOXW8ilvZJo+MwDDz1n0MRA0Z5RvpVD64AuVx5fESSy+v1RWuMmqBJPuVqCqLSAQ3pKf0vWZpQsA/4dFrp0H8ElqKiLRW11DNWiBKuYSIz6GeQSysPOD5wOd8ePsqMrXzVmxu4U1tCPRlOd1MbH7Rpla57J7axMR/JwsQaS4cEbp8YJrwYwHVnkMDImuVEzp+ViTqxvI7Y861ZJt7mWrgavcEmUQynT14St2pEhcsi00XEHi/aiYTexCuWuVESvo+YLUk7F+kN6qZMQmodw5PwloKJazC59VadyRdYAfl1Ikuu8NRfUY/AguyUqN2AK1K12sxgGaM+wJeNOWi5C2ho7b5ePUWQhjJcUrPFngjpGrktJHJXJgaNkznqU/KLwuqEGuZtGpJYSHFZy2eTF/gy2bPGsbVl04BJVpWshZPNoonpwC7QDeNaBZ2jWro+IsF17rXg3RoJbQuGGFv978Te5ijf2ZiJEVW9cX0RKU1jzxVDGY9hcDH1eqL7Dwv/6aFmTUHUqCgARv5trSh+JNXIXxzK+pgBvFGr678mZ8OOjfgRb5AA+fDZwFjvWFpP3BxLRimQLW2jnupRykrdrb4cw/SnUamv/Z4QJ2Q71Z7Wv68kSYYGM4pPjpVyrNK62x23t2tfzuitshQJkHa0kBQlbna7OflA0fv/vLJn4/hzR4VmYhlXqxTyjaVhRk4CDvH4Y4b0PdfFkiRfqhzSEFs5gBcoe6qf6rJlcXq7hWxIC3PrLw97zWfeaYxKIKtfW4qgpdH1CNh0+oJ9UG3KvYcR4YoqRNU2zfq6/7dO3om2zntY8xZQOxgB\"}         }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0             }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Let\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" the first\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" person pay x. The others p\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ay x + 2.50 \"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"and x + 5.00,\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" so the total is 3x +\"}      }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" 7.50 \"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"= 97.50. That\"}            }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" gives 3x = 90\"}         }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\", so x = 30.\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"\\n\\nEach\"}               }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" person pays 30.00,\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" 32.50, and 35\"}     }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\".00 (the\"} }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" first,\"}   }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\" second, and third resp\"}  }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"ectively).\"}             }\n\nevent: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1       }\n\nevent: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":56,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":216,\"output_tokens_details\":{\"thinking_tokens\":117}}       }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"              }\n\n"}}],
  :result
  {:value
   {:events
@@ -36,7 +37,7 @@
        :service_tier "standard",
        :inference_geo "global",
        :speed "standard"},
-      :id "msg_011ChDxvdqYS2StrQivXjGJN",
+      :id "msg_011ChDybbuHoXF8VCBxJtmR8",
       :container nil,
       :stop_reason nil,
       :model "claude-haiku-5-5"}}
@@ -48,59 +49,74 @@
      :delta {:type "thinking_delta", :thinking "I'm set"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "ting up the"}}
+     :delta {:type "thinking_delta", :thinking "ting the"}}
     {:type "content_block_delta",
      :index 0,
      :delta {:type "thinking_delta", :thinking " three am"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "ounts as a, a+2"}}
+     :delta {:type "thinking_delta", :thinking "ounts as"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking ".5, and a+5,"}}
+     :delta {:type "thinking_delta", :thinking " x, x+2.5,"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " which sum"}}
+     :delta {:type "thinking_delta", :thinking " and x+5, which s"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " to 97.5 and give"}}
+     :delta {:type "thinking_delta", :thinking "ums to 97.5 and"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " a"}}
+     :delta {:type "thinking_delta", :thinking " works"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " = 30,"}}
+     :delta {:type "thinking_delta", :thinking " out to x = 30,"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " so the sh"}}
+     :delta {:type "thinking_delta", :thinking " gi"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "ares are 30, 32."}}
+     :delta {:type "thinking_delta", :thinking "ving 30, 32.50"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "50, and 35. The user"}}
+     :delta {:type "thinking_delta", :thinking ", and 35.00,"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " w"}}
+     :delta {:type "thinking_delta", :thinking " and I've"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "ants the"}}
+     :delta {:type "thinking_delta", :thinking " checked that they"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " reasoning sh"}}
+     :delta {:type "thinking_delta", :thinking " add back"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking "own and"}}
+     :delta {:type "thinking_delta", :thinking " to"}}
+    {:type "content_block_delta",
+     :index 0,
+     :delta {:type "thinking_delta", :thinking " 97.5. The request"}}
+    {:type "content_block_delta",
+     :index 0,
+     :delta {:type "thinking_delta", :thinking " is"}}
+    {:type "content_block_delta",
+     :index 0,
+     :delta {:type "thinking_delta", :thinking " to reason bri"}}
+    {:type "content_block_delta",
+     :index 0,
+     :delta {:type "thinking_delta", :thinking "efly and then give"}}
     {:type "content_block_delta",
      :index 0,
      :delta
-     {:type "thinking_delta", :thinking " then a one-line answer,"}}
+     {:type "thinking_delta", :thinking " a one-line answer, so"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " so I'll keep it"}}
+     :delta {:type "thinking_delta", :thinking " that"}}
     {:type "content_block_delta",
      :index 0,
-     :delta {:type "thinking_delta", :thinking " brief."}}
+     :delta {:type "thinking_delta", :thinking "'s the"}}
+    {:type "content_block_delta",
+     :index 0,
+     :delta {:type "thinking_delta", :thinking " format I'll use."}}
     {:type "content_block_delta",
      :index 0,
      :delta {:type "thinking_delta", :thinking "\n\n"}}
@@ -109,86 +125,62 @@
      :delta
      {:type "signature_delta",
       :signature
-      "CAQS6AYKEAgUGAI4AUIIdGhpbmtpbmcSDI+/1XE2sH1LAo3nIRoMG8w9QM8LRR//KQC9IjBxb7583UaHQX7NVP8jBRxPZULN3VXCJElEU2U1rhTdPH2J1lBOESCi9JZYe+ul7tkqhQaRDugh4uUjUD3oyncMqQowdnCkSISRiapDZsobjWMpY9pk4xBLfKl7RfvlRhGYvi+JI0pc8zLXGkN2cJZbPuBYWngEM1p/q12m6TRChs20Z6OqTEJIRwGc65tl2+m4U2vxMyTAzJ9R9n2/4AgwVfcSfth9NeZtgmr8NNULnWk/dFy6SiyE6H4TKWb5QG2MmtRrimn8aVoZMOqiyAb84XH30yDgLS4Cdw7SAy6Di0DL4DB9deSP0O/m6BVXzsiFuDLQIec9kH9bTabhh98pHMF6MQeFcTM0XLeR8sR5h7Umnlzodyi1dUxS6KG/tOhqd1X4gzLs7ZUK/u3MvKkfVTIexfJfC39Zc1zVAoPVWvSjgYNKaFUvo296/bRdWRbhD133Xi+V6f9Uv8D/z3XK8EI4qfKc6b7IgyBl4CoGqj4epiyYGC1OzAGua7OMZN59aAPjh0fXXPPi7g4+RWIQwX2zhfaKijJO/xDWwB+cK/7ptzNhnEJ7Y3jbAHr0loaEL9r7G9OB/CcKP4pW0mQ4k2qPmB0nc0u7fkEXQ6jOA5/IFEVzDMQVNFxlyJcE67q+9BESJJJZekbwRBbQI66a/xxjEklppsrtRGX6GmNiRbuVEs42V4TfAhDx/TL5Q+8qG6cGOofcWSIIdk8VU36mDCd47YwqIjcgId29OVFNQnNlFBk8ld1akN6IEgGnR/q+T3p4Dp/kgEvZisKKVOvled448bdgABjsJ0hoZNcnJnKGNOQmH6LeHYYl9zixsXFkp3g3phlxU3Kqd08yvwpc2Kc3yu3xzsts3uyE5aAQn7vZOqCKwIjA9BH9IjK78ia19VyXOayXOgaOGdMznYDe2bO3RvPgSZdrRvf3GKYlZCGLeiAo6D3Xu2RR/mVcZyoPDHzJl7pSRVytmzXjdZqQAaaSMNmyYozm1bNITeY+ICR/k55pB1oJkyPusjUYFbsbBLCMQqtk/YkfLRmSmrSmlt1mA5Am4IxrBKsqgpVeZvwC0FfjZZD54nf5rfYqt9sA6kj9BoAOvRgB"}}
+      "CAQS0AYKEAgUGAI4AUIIdGhpbmtpbmcSDJUjxZOU589R/zYrhxoM6lu9LRB3McRXnqpCIjC3aPfHYxOTpBCpUsoBKkgraG2KtkeJXewoNF+Hd2lsDdhG+PxW52/agPILDsXdRXAq7QXpQKyp2ARSNoDVK3QYOIoUtBMOKu+UNSHGkC4nSKcrTz8H/7pUlcZO2oi6ds9gD8+PMM4dkwY5spZ2AoQ92IUQYBZhjYqyKWal1M5xN3AEbQCEfQPKNwhFU85Z92T+s2BnT9KrurMim7jja/dPrrS70c0Lz2GfrbCM2DQCVsAJJA4rulXysFzOXW8ilvZJo+MwDDz1n0MRA0Z5RvpVD64AuVx5fESSy+v1RWuMmqBJPuVqCqLSAQ3pKf0vWZpQsA/4dFrp0H8ElqKiLRW11DNWiBKuYSIz6GeQSysPOD5wOd8ePsqMrXzVmxu4U1tCPRlOd1MbH7Rpla57J7axMR/JwsQaS4cEbp8YJrwYwHVnkMDImuVEzp+ViTqxvI7Y861ZJt7mWrgavcEmUQynT14St2pEhcsi00XEHi/aiYTexCuWuVESvo+YLUk7F+kN6qZMQmodw5PwloKJazC59VadyRdYAfl1Ikuu8NRfUY/AguyUqN2AK1K12sxgGaM+wJeNOWi5C2ho7b5ePUWQhjJcUrPFngjpGrktJHJXJgaNkznqU/KLwuqEGuZtGpJYSHFZy2eTF/gy2bPGsbVl04BJVpWshZPNoonpwC7QDeNaBZ2jWro+IsF17rXg3RoJbQuGGFv978Te5ijf2ZiJEVW9cX0RKU1jzxVDGY9hcDH1eqL7Dwv/6aFmTUHUqCgARv5trSh+JNXIXxzK+pgBvFGr678mZ8OOjfgRb5AA+fDZwFjvWFpP3BxLRimQLW2jnupRykrdrb4cw/SnUamv/Z4QJ2Q71Z7Wv68kSYYGM4pPjpVyrNK62x23t2tfzuitshQJkHa0kBQlbna7OflA0fv/vLJn4/hzR4VmYhlXqxTyjaVhRk4CDvH4Y4b0PdfFkiRfqhzSEFs5gBcoe6qf6rJlcXq7hWxIC3PrLw97zWfeaYxKIKtfW4qgpdH1CNh0+oJ9UG3KvYcR4YoqRNU2zfq6/7dO3om2zntY8xZQOxgB"}}
     {:type "content_block_stop", :index 0}
     {:type "content_block_start",
      :index 1,
      :content_block {:type "text", :text ""}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "Let the first"}}
+     :delta {:type "text_delta", :text "Let"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " person"}}
+     :delta {:type "text_delta", :text " the first"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " pay x"}}
+     :delta {:type "text_delta", :text " person pay x. The others p"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text ". The"}}
+     :delta {:type "text_delta", :text "ay x + 2.50 "}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " second pays x + 2."}}
+     :delta {:type "text_delta", :text "and x + 5.00,"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "50,"}}
+     :delta {:type "text_delta", :text " so the total is 3x +"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " and the third pays x + "}}
+     :delta {:type "text_delta", :text " 7.50 "}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "5.00."}}
+     :delta {:type "text_delta", :text "= 97.50. That"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " Together"}}
+     :delta {:type "text_delta", :text " gives 3x = 90"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " they"}}
+     :delta {:type "text_delta", :text ", so x = 30."}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " p"}}
+     :delta {:type "text_delta", :text "\n\nEach"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "ay 3x + 7."}}
+     :delta {:type "text_delta", :text " person pays 30.00,"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "50 = 97.50,"}}
+     :delta {:type "text_delta", :text " 32.50, and 35"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text " so 3x = 90 "}}
+     :delta {:type "text_delta", :text ".00 (the"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "and x = 30. That g"}}
+     :delta {:type "text_delta", :text " first,"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "ives "}}
+     :delta {:type "text_delta", :text " second, and third resp"}}
     {:type "content_block_delta",
      :index 1,
-     :delta {:type "text_delta", :text "30."}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text "00, 32.50, and"}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text " 35.00,"}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text " which sums to 97.50"}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text "."}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text "\n\nAnswer: The three"}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text " people pay "}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text "30.00, 32.50"}}
-    {:type "content_block_delta",
-     :index 1,
-     :delta {:type "text_delta", :text ", and 35.00."}}
+     :delta {:type "text_delta", :text "ectively)."}}
     {:type "content_block_stop", :index 1}
     {:type "message_delta",
      :delta
@@ -200,8 +192,8 @@
      {:input_tokens 56,
       :cache_creation_input_tokens 0,
       :cache_read_input_tokens 0,
-      :output_tokens 234,
-      :output_tokens_details {:thinking_tokens 112}}}
+      :output_tokens 216,
+      :output_tokens_details {:thinking_tokens 117}}}
     {:type "message_stop"}],
    :message
    {:role "assistant",
@@ -210,16 +202,16 @@
     :content
     [{:type "thinking",
       :thinking
-      "I'm setting up the three amounts as a, a+2.5, and a+5, which sum to 97.5 and give a = 30, so the shares are 30, 32.50, and 35. The user wants the reasoning shown and then a one-line answer, so I'll keep it brief.\n\n",
+      "I'm setting the three amounts as x, x+2.5, and x+5, which sums to 97.5 and works out to x = 30, giving 30, 32.50, and 35.00, and I've checked that they add back to 97.5. The request is to reason briefly and then give a one-line answer, so that's the format I'll use.\n\n",
       :signature
-      "CAQS6AYKEAgUGAI4AUIIdGhpbmtpbmcSDI+/1XE2sH1LAo3nIRoMG8w9QM8LRR//KQC9IjBxb7583UaHQX7NVP8jBRxPZULN3VXCJElEU2U1rhTdPH2J1lBOESCi9JZYe+ul7tkqhQaRDugh4uUjUD3oyncMqQowdnCkSISRiapDZsobjWMpY9pk4xBLfKl7RfvlRhGYvi+JI0pc8zLXGkN2cJZbPuBYWngEM1p/q12m6TRChs20Z6OqTEJIRwGc65tl2+m4U2vxMyTAzJ9R9n2/4AgwVfcSfth9NeZtgmr8NNULnWk/dFy6SiyE6H4TKWb5QG2MmtRrimn8aVoZMOqiyAb84XH30yDgLS4Cdw7SAy6Di0DL4DB9deSP0O/m6BVXzsiFuDLQIec9kH9bTabhh98pHMF6MQeFcTM0XLeR8sR5h7Umnlzodyi1dUxS6KG/tOhqd1X4gzLs7ZUK/u3MvKkfVTIexfJfC39Zc1zVAoPVWvSjgYNKaFUvo296/bRdWRbhD133Xi+V6f9Uv8D/z3XK8EI4qfKc6b7IgyBl4CoGqj4epiyYGC1OzAGua7OMZN59aAPjh0fXXPPi7g4+RWIQwX2zhfaKijJO/xDWwB+cK/7ptzNhnEJ7Y3jbAHr0loaEL9r7G9OB/CcKP4pW0mQ4k2qPmB0nc0u7fkEXQ6jOA5/IFEVzDMQVNFxlyJcE67q+9BESJJJZekbwRBbQI66a/xxjEklppsrtRGX6GmNiRbuVEs42V4TfAhDx/TL5Q+8qG6cGOofcWSIIdk8VU36mDCd47YwqIjcgId29OVFNQnNlFBk8ld1akN6IEgGnR/q+T3p4Dp/kgEvZisKKVOvled448bdgABjsJ0hoZNcnJnKGNOQmH6LeHYYl9zixsXFkp3g3phlxU3Kqd08yvwpc2Kc3yu3xzsts3uyE5aAQn7vZOqCKwIjA9BH9IjK78ia19VyXOayXOgaOGdMznYDe2bO3RvPgSZdrRvf3GKYlZCGLeiAo6D3Xu2RR/mVcZyoPDHzJl7pSRVytmzXjdZqQAaaSMNmyYozm1bNITeY+ICR/k55pB1oJkyPusjUYFbsbBLCMQqtk/YkfLRmSmrSmlt1mA5Am4IxrBKsqgpVeZvwC0FfjZZD54nf5rfYqt9sA6kj9BoAOvRgB"}
+      "CAQS0AYKEAgUGAI4AUIIdGhpbmtpbmcSDJUjxZOU589R/zYrhxoM6lu9LRB3McRXnqpCIjC3aPfHYxOTpBCpUsoBKkgraG2KtkeJXewoNF+Hd2lsDdhG+PxW52/agPILDsXdRXAq7QXpQKyp2ARSNoDVK3QYOIoUtBMOKu+UNSHGkC4nSKcrTz8H/7pUlcZO2oi6ds9gD8+PMM4dkwY5spZ2AoQ92IUQYBZhjYqyKWal1M5xN3AEbQCEfQPKNwhFU85Z92T+s2BnT9KrurMim7jja/dPrrS70c0Lz2GfrbCM2DQCVsAJJA4rulXysFzOXW8ilvZJo+MwDDz1n0MRA0Z5RvpVD64AuVx5fESSy+v1RWuMmqBJPuVqCqLSAQ3pKf0vWZpQsA/4dFrp0H8ElqKiLRW11DNWiBKuYSIz6GeQSysPOD5wOd8ePsqMrXzVmxu4U1tCPRlOd1MbH7Rpla57J7axMR/JwsQaS4cEbp8YJrwYwHVnkMDImuVEzp+ViTqxvI7Y861ZJt7mWrgavcEmUQynT14St2pEhcsi00XEHi/aiYTexCuWuVESvo+YLUk7F+kN6qZMQmodw5PwloKJazC59VadyRdYAfl1Ikuu8NRfUY/AguyUqN2AK1K12sxgGaM+wJeNOWi5C2ho7b5ePUWQhjJcUrPFngjpGrktJHJXJgaNkznqU/KLwuqEGuZtGpJYSHFZy2eTF/gy2bPGsbVl04BJVpWshZPNoonpwC7QDeNaBZ2jWro+IsF17rXg3RoJbQuGGFv978Te5ijf2ZiJEVW9cX0RKU1jzxVDGY9hcDH1eqL7Dwv/6aFmTUHUqCgARv5trSh+JNXIXxzK+pgBvFGr678mZ8OOjfgRb5AA+fDZwFjvWFpP3BxLRimQLW2jnupRykrdrb4cw/SnUamv/Z4QJ2Q71Z7Wv68kSYYGM4pPjpVyrNK62x23t2tfzuitshQJkHa0kBQlbna7OflA0fv/vLJn4/hzR4VmYhlXqxTyjaVhRk4CDvH4Y4b0PdfFkiRfqhzSEFs5gBcoe6qf6rJlcXq7hWxIC3PrLw97zWfeaYxKIKtfW4qgpdH1CNh0+oJ9UG3KvYcR4YoqRNU2zfq6/7dO3om2zntY8xZQOxgB"}
      {:type "text",
       :text
-      "Let the first person pay x. The second pays x + 2.50, and the third pays x + 5.00. Together they pay 3x + 7.50 = 97.50, so 3x = 90 and x = 30. That gives 30.00, 32.50, and 35.00, which sums to 97.50.\n\nAnswer: The three people pay 30.00, 32.50, and 35.00."}],
+      "Let the first person pay x. The others pay x + 2.50 and x + 5.00, so the total is 3x + 7.50 = 97.50. That gives 3x = 90, so x = 30.\n\nEach person pays 30.00, 32.50, and 35.00 (the first, second, and third respectively)."}],
     :stop_sequence nil,
     :type "message",
     :usage
-    {:output_tokens_details {:thinking_tokens 112},
+    {:output_tokens_details {:thinking_tokens 117},
      :speed "standard",
      :service_tier "standard",
      :input_tokens 56,
@@ -228,8 +220,8 @@
      {:ephemeral_5m_input_tokens 0, :ephemeral_1h_input_tokens 0},
      :inference_geo "global",
      :cache_read_input_tokens 0,
-     :output_tokens 234},
-    :id "msg_011ChDxvdqYS2StrQivXjGJN",
+     :output_tokens 216},
+    :id "msg_011ChDybbuHoXF8VCBxJtmR8",
     :container nil,
     :stop_reason "end_turn",
     :model "claude-haiku-5-5"},

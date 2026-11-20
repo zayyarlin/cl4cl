@@ -1,20 +1,21 @@
-{:request
- {:method :post,
-  :url "/v1/messages",
-  :headers
-  {"anthropic-version" "2026-10-21",
-   "content-type" "application/json",
-   "x-api-key" "REDACTED"},
-  :body
-  "{\"model\":\"claude-haiku-5-5\",\"max_tokens\":60,\"tools\":[{\"name\":\"save_note\",\"description\":\"Save a note.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"text\":{\"type\":\"string\"}},\"required\":[\"title\",\"text\"]}}],\"thinking\":{\"type\":\"disabled\"},\"messages\":[{\"role\":\"user\",\"content\":\"Call save_note with the title 'Essay' and a 300 word essay about the sea as the text. Do not write anything before the tool call.\"}],\"stream\":true}"},
- :response
- {:status 200,
-  :headers
-  {"content-type" "text/event-stream; charset=utf-8",
-   "request-id" "req_011ChDxvnzi6ZFhnhvgZTKUs"},
-  :body
-  "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_011ChDxvoNmpHdHnsgr6uEpk\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":416,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":16,\"service_tier\":\"standard\",\"inference_geo\":\"global\",\"speed\":\"standard\"},\"diagnostics\":null}          }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_01X5WhWq5kzvEZ6yWAFeUDNK\",\"name\":\"save_note\",\"input\":{},\"caller\":{\"type\":\"direct\"}}            }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\"}          }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"{\\\"title\"}             }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\\\": \\\"Ess\"}      }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"ay\\\"\"}   }\n\nevent: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"max_tokens\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":416,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":60,\"output_tokens_details\":{\"thinking_tokens\":0}}            }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"       }\n\n"},
- :scenario "stream-tool-use-cut-off",
+{:scenario "stream-tool-use-cut-off",
+ :exchanges
+ [{:request
+   {:method :post,
+    :url "/v1/messages",
+    :headers
+    {"anthropic-version" "2026-10-21",
+     "content-type" "application/json",
+     "x-api-key" "REDACTED"},
+    :body
+    "{\"model\":\"claude-haiku-5-5\",\"max_tokens\":60,\"tools\":[{\"name\":\"save_note\",\"description\":\"Save a note.\",\"input_schema\":{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"text\":{\"type\":\"string\"}},\"required\":[\"title\",\"text\"]}}],\"thinking\":{\"type\":\"disabled\"},\"messages\":[{\"role\":\"user\",\"content\":\"Call save_note with the title 'Essay' and a 300 word essay about the sea as the text. Do not write anything before the tool call.\"}],\"stream\":true}"},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "text/event-stream; charset=utf-8",
+     "request-id" "req_011ChDybk5RgKb3fWsp5tFYx"},
+    :body
+    "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_011ChDybkQWmn3uuuTMkqAB2\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"container\":null,\"stop_reason\":null,\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":416,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":16,\"service_tier\":\"standard\",\"inference_geo\":\"global\",\"speed\":\"standard\"},\"diagnostics\":null}       }\n\nevent: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_014LRsq3rzo4A4kGup7hNea3\",\"name\":\"save_note\",\"input\":{},\"caller\":{\"type\":\"direct\"}}        }\n\nevent: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\"}    }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"{\\\"title\"}       }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"\\\": \\\"Ess\"}              }\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"ay\\\"\"}            }\n\nevent: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"max_tokens\",\"stop_sequence\":null,\"stop_details\":null,\"container\":null},\"usage\":{\"input_tokens\":416,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":60,\"output_tokens_details\":{\"thinking_tokens\":0}}     }\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"      }\n\n"}}],
  :result
  {:value
   {:events
@@ -36,7 +37,7 @@
        :service_tier "standard",
        :inference_geo "global",
        :speed "standard"},
-      :id "msg_011ChDxvoNmpHdHnsgr6uEpk",
+      :id "msg_011ChDybkQWmn3uuuTMkqAB2",
       :container nil,
       :stop_reason nil,
       :model "claude-haiku-5-5"}}
@@ -44,7 +45,7 @@
      :index 0,
      :content_block
      {:type "tool_use",
-      :id "toolu_01X5WhWq5kzvEZ6yWAFeUDNK",
+      :id "toolu_014LRsq3rzo4A4kGup7hNea3",
       :name "save_note",
       :input {},
       :caller {:type "direct"}}}
@@ -79,7 +80,7 @@
     :stop_details nil,
     :content
     [{:type "tool_use",
-      :id "toolu_01X5WhWq5kzvEZ6yWAFeUDNK",
+      :id "toolu_014LRsq3rzo4A4kGup7hNea3",
       :name "save_note",
       :input {},
       :caller {:type "direct"}}],
@@ -96,7 +97,7 @@
      :inference_geo "global",
      :cache_read_input_tokens 0,
      :output_tokens 60},
-    :id "msg_011ChDxvoNmpHdHnsgr6uEpk",
+    :id "msg_011ChDybkQWmn3uuuTMkqAB2",
     :container nil,
     :stop_reason "max_tokens",
     :model "claude-haiku-5-5"},

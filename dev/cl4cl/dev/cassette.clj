@@ -3,13 +3,15 @@
 
   A scenario is data: a name, an operation and a request body. Recording
   runs it against the real API and writes a cassette, an EDN file holding
-  the HTTP request cl4cl sent, the raw HTTP response, and the value cl4cl
-  returned. Replaying serves the raw response from a local HTTP server, so
-  the whole client runs, sockets included, and must send the same request
-  and return the same value.
+  each HTTP exchange in order (the request cl4cl sent and the raw
+  response) and the value cl4cl returned. Replaying serves the raw
+  responses in the same order from a local HTTP server, so the whole
+  client runs, sockets included, and must send the same requests and
+  return the same value.
 
   Record with `lein record` (all scenarios) or `lein record NAME...`."
-  (:require [cl4cl.core :as core]
+  (:require [cl4cl.batches :as batches]
+            [cl4cl.core :as core]
             [cl4cl.dev.env :as env]
             [cl4cl.http :as http]
             [cl4cl.json :as json]
@@ -43,7 +45,8 @@
 (defn- prompt [text] [{:role "user" :content text}])
 
 (def scenarios
-  "What gets recorded. :op is :create, :stream or :count-tokens."
+  "What gets recorded. :op is :create, :stream, :count-tokens,
+  :batch-lifecycle or :batch-cancel."
   [{:name "create-text"
     :op :create
     :body {:model model :max_tokens 1024
@@ -90,13 +93,38 @@
     :body {:model model :messages (prompt "Hi")}}
    {:name "stream-error-not-found"
     :op :stream
-    :body {:model "not-a-model" :max_tokens 16 :messages (prompt "Hi")}}])
+    :body {:model "not-a-model" :max_tokens 16 :messages (prompt "Hi")}}
+   {:name "batch-lifecycle"
+    :op :batch-lifecycle
+    :body {:requests [{:custom_id "ping"
+                       :params {:model model :max_tokens 1024
+                                :messages (prompt "Reply with the single word: pong")}}
+                      {:custom_id "bad-model"
+                       :params {:model "not-a-model" :max_tokens 16 :messages (prompt "Hi")}}]}}
+   {:name "batch-cancel"
+    :op :batch-cancel
+    :body {:requests [{:custom_id "ping"
+                       :params {:model model :max_tokens 1024
+                                :messages (prompt "Reply with the single word: pong")}}]}}
+   {:name "batch-error-not-found"
+    :op :batch-retrieve
+    :body "msgbatch_does_not_exist"}])
+
+(defn- await-ended
+  "Poll a batch until it has ended, and return it."
+  [client id poll-ms]
+  (loop [polls 0]
+    (let [batch (batches/retrieve client id)]
+      (cond
+        (= "ended" (:processing_status batch)) batch
+        (< polls 360) (do (Thread/sleep (long poll-ms)) (recur (inc polls)))
+        :else (throw (ex-info "The batch did not end in time" {:id id}))))))
 
 (defn run
   "Run a scenario with a client and describe what cl4cl gave back, as
-  plain data: {:value v} or {:error ex-data}. For a stream the value is
-  {:events [...] :message m :block-meta [...]}."
-  [client {:keys [op body]}]
+  plain data: {:value v} or {:error ex-data}. poll-ms is how long to wait
+  between checks on a batch: seconds when recording, nothing on replay."
+  [client {:keys [op body]} poll-ms]
   (try
     {:value
      (case op
@@ -106,7 +134,25 @@
                            message (core/final-message events)]
                        {:events events
                         :message message
-                        :block-meta (mapv #(not-empty (meta %)) (:content message))}))}
+                        :block-meta (mapv #(not-empty (meta %)) (:content message))})
+       :batch-retrieve (batches/retrieve client body)
+       :batch-lifecycle
+       (let [created (batches/create client body)
+             ended (await-ended client (:id created) poll-ms)]
+         {:created created
+          :ended ended
+          :results (into [] (batches/results client (:id created)))
+          :page (batches/list client {:limit 1})
+          :deleted (batches/delete client (:id created))})
+       :batch-cancel
+       (let [created (batches/create client body)
+             canceling (batches/cancel client (:id created))
+             ended (await-ended client (:id created) poll-ms)]
+         {:created created
+          :canceling canceling
+          :ended ended
+          :results (into [] (batches/results client (:id created)))
+          :deleted (batches/delete client (:id created))}))}
     (catch clojure.lang.ExceptionInfo e
       {:error (ex-data e)})))
 
@@ -141,7 +187,7 @@
   "Run a scenario against the real API and write its cassette."
   [{:keys [name] :as scenario}]
   (let [client (core/client {:api-key (env/api-key) :retry {:max 0 :base-ms 0 :cap-ms 0}})
-        exchange (atom nil)
+        exchanges (atom [])
         send! http/send!
         result (with-redefs [http/send!
                              (fn [http-client request as]
@@ -150,16 +196,16 @@
                                             (with-open [in ^InputStream (:body response)]
                                               (String. (.readAllBytes in) "UTF-8"))
                                             (:body response))]
-                                 (reset! exchange
-                                         {:request (scrub-request request)
-                                          :response (-> response
-                                                        (update :headers select-keys kept-response-headers)
-                                                        (assoc :body text))})
+                                 (swap! exchanges conj
+                                        {:request (scrub-request request)
+                                         :response (-> response
+                                                       (update :headers select-keys kept-response-headers)
+                                                       (assoc :body text))})
                                  (assoc response :body (if (= :stream as)
                                                          (ByteArrayInputStream. (.getBytes text "UTF-8"))
                                                          text))))]
-                 (run client scenario))]
-    (save! name (assoc @exchange :scenario name :result result))
+                 (run client scenario 5000))]
+    (save! name {:scenario name :exchanges @exchanges :result result})
     name))
 
 (defn record-all!
@@ -188,29 +234,31 @@
         (.flush out)))))
 
 (defn replay
-  "Run a scenario against a local server that answers with the cassette's
-  recorded response. Returns {:request what-the-server-received
-  :result what-cl4cl-returned}, shaped like the cassette's own keys."
-  [scenario {:keys [response]}]
-  (let [received (atom nil)
+  "Run a scenario against a local server that answers each request with
+  the cassette's next recorded response. Returns {:requests
+  what-the-server-received :result what-cl4cl-returned}."
+  [scenario {:keys [exchanges]}]
+  (let [received (atom [])
         server (HttpServer/create (InetSocketAddress. "127.0.0.1" 0) 0)]
     (.createContext server "/"
                     (reify HttpHandler
                       (handle [_ exchange]
-                        (reset! received
-                                {:method (keyword (str/lower-case (.getRequestMethod exchange)))
-                                 :url (str (.getRequestURI exchange))
-                                 :headers (into {} (for [[k vs] (.getRequestHeaders exchange)]
-                                                     [(str/lower-case k) (str/join "," vs)]))
-                                 :body (slurp (.getRequestBody exchange))})
-                        (respond! exchange response))))
+                        (let [n (count (swap! received conj
+                                              {:method (keyword (str/lower-case (.getRequestMethod exchange)))
+                                               :url (str (.getRequestURI exchange))
+                                               :headers (into {} (for [[k vs] (.getRequestHeaders exchange)]
+                                                                   [(str/lower-case k) (str/join "," vs)]))
+                                               :body (slurp (.getRequestBody exchange))}))]
+                          (respond! exchange
+                                    (or (:response (get exchanges (dec n)))
+                                        {:status 500 :headers {} :body "The cassette has no more responses"}))))))
     (.start server)
     (try
       (let [client (core/client {:api-key "REDACTED"
                                  :base-url (str "http://127.0.0.1:" (.getPort (.getAddress server)))
                                  :retry {:max 0 :base-ms 0 :cap-ms 0}})
-            result (run client scenario)]
-        {:request @received :result result})
+            result (run client scenario 0)]
+        {:requests @received :result result})
       (finally
         (.stop server 0)))))
 
@@ -222,4 +270,4 @@
    :url url
    :headers (select-keys headers ["anthropic-version" "anthropic-beta" "content-type"
                                   "x-api-key" "authorization"])
-   :body (some-> body json/read-str)})
+   :body (some-> body not-empty json/read-str)})

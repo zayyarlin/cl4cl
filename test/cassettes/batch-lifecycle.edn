@@ -1,0 +1,396 @@
+{:scenario "batch-lifecycle",
+ :exchanges
+ [{:request
+   {:method :post,
+    :url "/v1/messages/batches",
+    :headers
+    {"anthropic-version" "2026-10-21",
+     "content-type" "application/json",
+     "x-api-key" "REDACTED"},
+    :timeout-ms 600000,
+    :body
+    "{\"requests\":[{\"custom_id\":\"ping\",\"params\":{\"model\":\"claude-haiku-5-5\",\"max_tokens\":1024,\"messages\":[{\"role\":\"user\",\"content\":\"Reply with the single word: pong\"}]}},{\"custom_id\":\"bad-model\",\"params\":{\"model\":\"not-a-model\",\"max_tokens\":16,\"messages\":[{\"role\":\"user\",\"content\":\"Hi\"}]}}]}"},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDycKcHoKqjzTBy4wVcH"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDycPYvUDg47FVtRLu1S",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDycoBUvCDiy7wQQ31Y4",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDydCGnxRbBjo4cst9ER",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDydbRKr9ARRkD9cP13f",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDye1D4Fb53MsRTyWHU2",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyeQASXwqW12C2UiB9v",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyeoGVSCrh7McB8cx5k",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyfCsZhGA5E63wxAbXT",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyfc4q5iq8m9gTRqrhy",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyg1SFpFkYzYMNBNevR",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDygQuteLy6bCq9jmqJL",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDygp7eNJhVeerLThdZ6",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyhDJQtcGjRd1rKotEm",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyhcXv1BqQ4VUd8y3N3",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyi1jg6XsyPMaa2axZB",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyiQzuEUrrHD8Bu3AvF",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyioxXYxHPddrEMitNF",
+     "retry-after" "10"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"in_progress\",\"request_counts\":{\"processing\":2,\"succeeded\":0,\"errored\":0,\"canceled\":0,\"expired\":0},\"ended_at\":null,\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":null}"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyjDMSmvnMyEN52Lksf"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"ended\",\"request_counts\":{\"processing\":0,\"succeeded\":1,\"errored\":1,\"canceled\":0,\"expired\":0},\"ended_at\":\"2026-11-20T09:55:19.494661+00:00\",\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":\"https://api.anthropic.com/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5/results\"}"}}
+  {:request
+   {:method :get,
+    :url
+    "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5/results",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"}},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/x-jsonl",
+     "request-id" "req_011ChDyjEnGUCQRiFhmUB6io"},
+    :body
+    "{\"custom_id\":\"ping\",\"result\":{\"type\":\"succeeded\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_011ChDydZaTkAkqV8hPyeUsb\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"pong\"}],\"container\":null,\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"stop_details\":null,\"usage\":{\"input_tokens\":18,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":4,\"output_tokens_details\":{\"thinking_tokens\":0},\"service_tier\":\"batch\",\"inference_geo\":\"global\",\"speed\":\"standard\"},\"diagnostics\":null}}}\n{\"custom_id\":\"bad-model\",\"result\":{\"type\":\"errored\",\"error\":{\"type\":\"error\",\"error\":{\"details\":null,\"type\":\"not_found_error\",\"message\":\"model: not-a-model\"},\"request_id\":null}}}\n"}}
+  {:request
+   {:method :get,
+    :url "/v1/messages/batches?limit=1",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyjGhruRv1dYWXSruQf"},
+    :body
+    "{\"data\":[{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch\",\"processing_status\":\"ended\",\"request_counts\":{\"processing\":0,\"succeeded\":1,\"errored\":1,\"canceled\":0,\"expired\":0},\"ended_at\":\"2026-11-20T09:55:19.494661+00:00\",\"created_at\":\"2026-11-20T09:53:50.259881+00:00\",\"expires_at\":\"2026-11-21T09:53:50.259881+00:00\",\"archived_at\":null,\"cancel_initiated_at\":null,\"results_url\":\"https://api.anthropic.com/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5/results\"}],\"has_more\":false,\"first_id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"last_id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\"}"}}
+  {:request
+   {:method :delete,
+    :url "/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :headers
+    {"anthropic-version" "2026-10-21", "x-api-key" "REDACTED"},
+    :timeout-ms 600000},
+   :response
+   {:status 200,
+    :headers
+    {"content-type" "application/json",
+     "request-id" "req_011ChDyjJDeNPXprsaQyWTgu"},
+    :body
+    "{\"id\":\"msgbatch_01Tif3SAs2H9H9eoHgCZqvY5\",\"type\":\"message_batch_deleted\"}"}}],
+ :result
+ {:value
+  {:created
+   {:cancel_initiated_at nil,
+    :expires_at "2026-11-21T09:53:50.259881+00:00",
+    :type "message_batch",
+    :processing_status "in_progress",
+    :ended_at nil,
+    :id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :archived_at nil,
+    :request_counts
+    {:processing 2, :succeeded 0, :errored 0, :canceled 0, :expired 0},
+    :results_url nil,
+    :created_at "2026-11-20T09:53:50.259881+00:00"},
+   :ended
+   {:cancel_initiated_at nil,
+    :expires_at "2026-11-21T09:53:50.259881+00:00",
+    :type "message_batch",
+    :processing_status "ended",
+    :ended_at "2026-11-20T09:55:19.494661+00:00",
+    :id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :archived_at nil,
+    :request_counts
+    {:processing 0, :succeeded 1, :errored 1, :canceled 0, :expired 0},
+    :results_url
+    "https://api.anthropic.com/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5/results",
+    :created_at "2026-11-20T09:53:50.259881+00:00"},
+   :results
+   [{:custom_id "ping",
+     :result
+     {:type "succeeded",
+      :message
+      {:role "assistant",
+       :diagnostics nil,
+       :stop_details nil,
+       :content [{:type "text", :text "pong"}],
+       :stop_sequence nil,
+       :type "message",
+       :usage
+       {:output_tokens_details {:thinking_tokens 0},
+        :speed "standard",
+        :service_tier "batch",
+        :input_tokens 18,
+        :cache_creation_input_tokens 0,
+        :cache_creation
+        {:ephemeral_5m_input_tokens 0, :ephemeral_1h_input_tokens 0},
+        :inference_geo "global",
+        :cache_read_input_tokens 0,
+        :output_tokens 4},
+       :id "msg_011ChDydZaTkAkqV8hPyeUsb",
+       :container nil,
+       :stop_reason "end_turn",
+       :model "claude-haiku-5-5"}}}
+    {:custom_id "bad-model",
+     :result
+     {:type "errored",
+      :error
+      {:type "error",
+       :error
+       {:details nil,
+        :type "not_found_error",
+        :message "model: not-a-model"},
+       :request_id nil}}}],
+   :page
+   {:data
+    [{:cancel_initiated_at nil,
+      :expires_at "2026-11-21T09:53:50.259881+00:00",
+      :type "message_batch",
+      :processing_status "ended",
+      :ended_at "2026-11-20T09:55:19.494661+00:00",
+      :id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+      :archived_at nil,
+      :request_counts
+      {:processing 0,
+       :succeeded 1,
+       :errored 1,
+       :canceled 0,
+       :expired 0},
+      :results_url
+      "https://api.anthropic.com/v1/messages/batches/msgbatch_01Tif3SAs2H9H9eoHgCZqvY5/results",
+      :created_at "2026-11-20T09:53:50.259881+00:00"}],
+    :has_more false,
+    :first_id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :last_id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5"},
+   :deleted
+   {:id "msgbatch_01Tif3SAs2H9H9eoHgCZqvY5",
+    :type "message_batch_deleted"}}}}
