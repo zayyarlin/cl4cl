@@ -1,0 +1,5 @@
+;; The spec items cl4cl implements, as [kind id] pairs matching
+;; cl4cl.dev.spec/items. An item belongs here only once the spec-driven
+;; test for its kind passes for it (see test/cl4cl/spec_test.clj).
+;; Run `bb spec:checklist` after editing.
+#{}
