@@ -40,6 +40,7 @@
    :version "2026-10-21"
    :betas []
    :timeout-ms 600000
+   :idle-timeout-ms 600000
    :connect-timeout-ms 30000
    :retry {:max 2 :base-ms 500 :cap-ms 8000}})
 
@@ -52,7 +53,9 @@
     :base-url    default ANTHROPIC_BASE_URL, else https://api.anthropic.com
     :version     the anthropic-version header
     :betas       beta names sent on every call
-    :timeout-ms  for non-streaming calls
+    :timeout-ms  for non-streaming calls, start to finish
+    :idle-timeout-ms  for streaming calls: the longest wait for the
+                 reply to start or to continue; nil for no limit
     :retry       {:max :base-ms :cap-ms}, and optionally
                  :max-retry-after-ms, default 60000
 
@@ -152,9 +155,13 @@
   new request. The connection closes when the reduction finishes, stops
   early with `reduced`, or throws. A failure before the body starts is
   retried like any other call; one after it is thrown. There is no total
-  timeout, since a long body is normal."
+  timeout, since a long body is normal. Instead the client's
+  :idle-timeout-ms bounds each wait for the server: a body that stops
+  arriving for that long throws a :cl4cl.error/connection ex-info."
   [client http-request xf]
-  (let [http-request (dissoc http-request :timeout-ms)]
+  (let [http-request (-> http-request
+                         (dissoc :timeout-ms)
+                         (assoc :idle-timeout-ms (:idle-timeout-ms client)))]
     (reify clojure.lang.IReduceInit
       (reduce [_ f init]
         (let [{:keys [body]} (http/with-retry (:retry client)

@@ -6,7 +6,10 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]])
   (:import [clojure.lang ExceptionInfo]
-           [java.io ByteArrayInputStream]))
+           [com.sun.net.httpserver HttpHandler HttpServer]
+           [java.io ByteArrayInputStream]
+           [java.net InetSocketAddress]
+           [java.util.concurrent CountDownLatch]))
 
 (def client
   (core/client {:api-key "k" :retry {:max 2 :base-ms 0 :cap-ms 0}}))
@@ -125,11 +128,12 @@
                   "content_block_stop" "message_delta" "message_stop"]
                  (into [] (map :type) events))))
         (is @closed)
-        (testing "the request asks for a stream and has no total timeout"
+        (testing "the request asks for a stream, with an idle timeout in place of the total one"
           (let [[request as] (first @sent)]
             (is (= :stream as))
             (is (= {:model "m" :stream true} (json/read-str (:body request))))
-            (is (not (contains? request :timeout-ms)))))
+            (is (not (contains? request :timeout-ms)))
+            (is (= 600000 (:idle-timeout-ms request)))))
         (testing "it folds into the message create would return"
           (is (= {:id "msg_1" :type "message" :stop_reason "end_turn"
                   :content [{:type "text" :text "Héllo"}]
@@ -187,3 +191,72 @@
         block (first (:content message))]
     (is (= {} (:input block)))
     (is (= deep (:cl4cl.stream/partial-json (meta block))))))
+
+(defn- silent-server
+  "A local server that answers every request with the given SSE text, if
+  any, and then says nothing more until release is counted down."
+  ^HttpServer [text ^CountDownLatch release]
+  (doto (HttpServer/create (InetSocketAddress. "127.0.0.1" 0) 0)
+    (.createContext "/"
+                    (reify HttpHandler
+                      (handle [_ exchange]
+                        (when text
+                          (.sendResponseHeaders exchange 200 0)
+                          (doto (.getResponseBody exchange)
+                            (.write (.getBytes ^String text "UTF-8"))
+                            (.flush)))
+                        (.await release)
+                        (.close exchange))))
+    (.start)))
+
+(defn- outcome-against-silence
+  "Stream from a silent-server with a 200 ms idle timeout. Returns the
+  event types that arrived and the exception that ended the stream."
+  [text]
+  (let [release (CountDownLatch. 1)
+        server (silent-server text release)]
+    (try
+      (let [client (core/client {:api-key "k"
+                                 :base-url (str "http://127.0.0.1:" (.getPort (.getAddress server)))
+                                 :idle-timeout-ms 200
+                                 :retry {:max 0 :base-ms 0 :cap-ms 0}})
+            seen (atom [])
+            e (try (run! #(swap! seen conj (:type %)) (core/stream client {:model "m"}))
+                   (catch ExceptionInfo e e))]
+        {:seen @seen :error e})
+      (finally
+        (.countDown release)
+        (.stop server 0)))))
+
+(deftest a-stream-that-goes-silent-times-out
+  (testing "after part of the body"
+    (let [{:keys [seen error]} (outcome-against-silence (sse {:type "message_start" :message {}}))]
+      (is (= ["message_start"] seen) "what arrived before the silence was delivered")
+      (is (= ::error/connection (:type (ex-data error))))
+      (is (str/includes? (ex-message error) "no data arrived for 200 ms"))))
+  (testing "before the response starts"
+    (let [{:keys [seen error]} (outcome-against-silence nil)]
+      (is (empty? seen))
+      (is (= ::error/connection (:type (ex-data error))))
+      (is (str/includes? (ex-message error) "no response began within 200 ms")))))
+
+(deftest a-steady-stream-may-outlast-the-idle-timeout
+  (let [server (doto (HttpServer/create (InetSocketAddress. "127.0.0.1" 0) 0)
+                 (.createContext "/"
+                                 (reify HttpHandler
+                                   (handle [_ exchange]
+                                     (.sendResponseHeaders exchange 200 0)
+                                     (with-open [out (.getResponseBody exchange)]
+                                       (dotimes [_ 6]
+                                         (.write out (.getBytes ^String (sse {:type "ping"} {:type "x"}) "UTF-8"))
+                                         (.flush out)
+                                         (Thread/sleep 100))))))
+                 (.start))]
+    (try
+      (let [client (core/client {:api-key "k"
+                                 :base-url (str "http://127.0.0.1:" (.getPort (.getAddress server)))
+                                 :idle-timeout-ms 300})]
+        (is (= 6 (count (into [] (core/stream client {:model "m"}))))
+            "600 ms of events 100 ms apart is not idle for 300 ms"))
+      (finally
+        (.stop server 0)))))

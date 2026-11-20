@@ -91,6 +91,7 @@ There are three rules, and the rest follows from them.
 | `:version` | The `anthropic-version` header | `2026-10-21` |
 | `:betas` | Beta names sent on every call as `anthropic-beta` | `[]` |
 | `:timeout-ms` | Total time allowed for a non-streaming call | 600000 (10 minutes) |
+| `:idle-timeout-ms` | For streaming calls, the longest wait for the reply to start or to continue; `nil` for no limit | 600000 (10 minutes) |
 | `:connect-timeout-ms` | Time allowed to connect | 30000 |
 | `:retry` | Retry policy, see [Errors and retries](#errors-and-retries) | `{:max 2 :base-ms 500 :cap-ms 8000}` |
 
@@ -157,7 +158,7 @@ Response header names are lower-case. Rate-limit headers are in `:cl4cl/headers`
 
 ## Streaming
 
-`(claude/stream client body)` returns a reducible of events. Use it for long replies, since a streaming call has no total timeout.
+`(claude/stream client body)` returns a reducible of events. Use it for long replies, since a streaming call has no total timeout. It has an idle timeout instead: if the API sends nothing for `:idle-timeout-ms`, the stream throws a `:cl4cl.error/connection` error rather than waiting for ever. Time you spend handling an event does not count.
 
 Three facts about the reducible:
 
@@ -463,7 +464,7 @@ Every function takes an optional last argument of options that are not part of t
 | Option | Meaning |
 |---|---|
 | `:betas` | Beta names for this call, joined with the client's into `anthropic-beta` |
-| `:timeout-ms` | Overrides the client's; ignored by `stream` and `batches/results` |
+| `:timeout-ms` | Overrides the client's; ignored by `stream` and `batches/results`, which use the client's `:idle-timeout-ms` |
 | `:headers` | Extra headers, as a map of string to string |
 | `:path`, `:method`, `:query` | For [other endpoints](#other-endpoints-and-your-own-http-client) |
 

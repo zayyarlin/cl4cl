@@ -1,7 +1,8 @@
 (ns cl4cl.http-test
   (:require [cl4cl.error :as error]
             [cl4cl.http :as http]
-            [clojure.test :refer [deftest is]]))
+            [clojure.test :refer [deftest is]])
+  (:import [java.io ByteArrayInputStream]))
 
 (defn- failing
   "A thunk that throws the given errors in turn, then returns :ok. The
@@ -60,3 +61,14 @@
     (is (= 90000 (http/backoff-ms (assoc p :max-retry-after-ms 120000) 1
                                   (err ::error/rate-limit :retry-after-ms 90000) 0.0))
         "and the limit is part of the policy")))
+
+(deftest idle-timeout-times-the-peer-not-the-caller
+  (let [closed (atom false)
+        body (proxy [ByteArrayInputStream] [(.getBytes "ab" "UTF-8")]
+               (close [] (reset! closed true)))]
+    (with-open [in (http/idle-timeout body 50)]
+      (is (= (int \a) (.read in)))
+      (Thread/sleep 200)
+      (is (= (int \b) (.read in)) "a caller that is slow to read is not a silent peer")
+      (is (= -1 (.read in))))
+    (is @closed)))

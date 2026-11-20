@@ -33,7 +33,7 @@ For which fields exist and what a model accepts, the authority is the API refere
 (def client (claude/client {:api-key "sk-ant-..."}))
 ```
 
-The client is an immutable map: make one and share it. Other options: `:auth-token`, `:base-url`, `:version`, `:betas`, `:timeout-ms` (default 600000), `:retry` (default `{:max 2 :base-ms 500 :cap-ms 8000}`). Vary one with `assoc`.
+The client is an immutable map: make one and share it. Other options: `:auth-token`, `:base-url`, `:version`, `:betas`, `:timeout-ms` (default 600000), `:idle-timeout-ms` (for streams, default 600000), `:retry` (default `{:max 2 :base-ms 500 :cap-ms 8000}`). Vary one with `assoc`.
 
 ## One request
 
@@ -58,7 +58,7 @@ The client is an immutable map: make one and share it. Other options: `:auth-tok
 
 ## Streaming
 
-Use `stream` for long replies; it has no total timeout. Nothing is sent until the result is reduced, and each reduction is a new request.
+Use `stream` for long replies; it has no total timeout, only `:idle-timeout-ms`, the longest silence it accepts from the API before throwing `::error/connection`. Nothing is sent until the result is reduced, and each reduction is a new request.
 
 ```clojure
 ;; print text as it arrives, and get the finished message at the end

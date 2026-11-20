@@ -25,7 +25,7 @@ The design question to ask is "what would Rich Hickey do?". In practice:
 | Streaming | `stream` returns a reducible (`IReduceInit`) of events | Works with `reduce`/`transduce`/`run!`; deterministic connection cleanup |
 | Keys | Wire names as keywords | Matches the API docs one to one; no translation layer |
 | `:stream` in a request body | The function owns it: `create` sends `false`, `stream` sends `true`, whatever the caller put there | One function, one return type; nothing to reject |
-| Timeout | A flat value in the client map, 10 minutes by default, with no scaling by `:max_tokens` | Policy is visible data, not hidden arithmetic. Long outputs should stream. |
+| Timeout | Flat values in the client map, 10 minutes by default, with no scaling by `:max_tokens`: a total for non-streaming calls and an idle limit for streaming ones | Policy is visible data, not hidden arithmetic. Long outputs should stream, and a stream is long by nature but should never be silent for long. |
 | Tool-runner loop | Not in `cl4cl.core`. A later, separate namespace built only on the public API | A loop is policy on top of transport; keeping it apart keeps both simple |
 | Request validation | None | The API's 400 messages are the source of truth and stay current |
 
@@ -95,6 +95,7 @@ Two more public functions do the sending, and every endpoint function is a one-l
 | `:version` | `2026-10-21`; sent as `anthropic-version` |
 | `:betas` | `[]`; merged with per-call `:betas` into one `anthropic-beta` header |
 | `:timeout-ms` | 600000 for non-streaming calls |
+| `:idle-timeout-ms` | 600000 for streaming calls: the longest wait for the reply to start or continue; `nil` for no limit |
 | `:connect-timeout-ms` | 30000 |
 | `:retry` | `{:max 2 :base-ms 500 :cap-ms 8000}` |
 
@@ -154,7 +155,9 @@ data.json reads and writes recursively, and how deeply a tool input is nested is
 (transduce (map (fn [e] (print-delta e) e)) stream/accumulate (claude/stream client body))
 ```
 
-Streaming calls have no total timeout, only a connect timeout, because a long generation is normal.
+Streaming calls have no total timeout, because a long generation is normal. What is bounded is silence: the client's `:idle-timeout-ms` is the longest wait for the response to start and then for each further part of the body, and a stream that exceeds it throws a `:cl4cl.error/connection` error. Only waiting on the server is timed, so a caller that is slow to consume events is not idle.
+
+The JDK gives a blocking read of a response body no timeout, and the request timeout cannot stand in for one: from JDK 26 it covers the body as well as the headers, which would make it a limit on the whole stream. So `cl4cl.http/idle-timeout` wraps the body, and one daemon timer thread closes a body whose read has waited too long, which ends the read.
 
 ## Errors
 
