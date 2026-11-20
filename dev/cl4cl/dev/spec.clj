@@ -125,6 +125,56 @@
 (defn domain-type [sections title]
   (first (:nodes (section sections "Domain types" title))))
 
+(defn variant
+  "The member of a union node that `variants` identifies by id."
+  [node id]
+  (some (fn [[v child]] (when (= id v) child))
+        (map vector (variants node) (:children node))))
+
+;; --- sample values ---
+
+(defn- type-name
+  "The name a node defines, as in `TextBlock object` or `StopReason = ...`."
+  [node]
+  (second (re-find #"^([A-Z]\w*)(?: object$| = )" (str (:type node)))))
+
+(defn types-by-name
+  "The reference's domain types, by the name bullets use to refer to them."
+  [sections]
+  (into {}
+        (for [{:keys [path nodes]} sections
+              :when (= "Domain types" (peek (pop path)))
+              :let [node (first nodes)]
+              :when (type-name node)]
+          [(type-name node) node])))
+
+(defn- sample* [types depth type children]
+  (let [type (-> (str type)
+                 (str/replace #"^\w+ = " "")
+                 (str/replace #" or null$" ""))
+        sample-node (fn [c] (sample* types (inc depth) (:type c) (:children c)))
+        referenced (types (second (re-find #"^([A-Z]\w*)" type)))]
+    (cond
+      (literal type)                      (literal type)
+      (str/starts-with? type "array of ") [(sample* types depth (subs type (count "array of ")) children)]
+      (some :name children)               (into {} (map (juxt (comp keyword :name) sample-node)) children)
+      (seq children)                      (sample-node (first children))
+      ;; A type the reference names here but spells out only under its own heading.
+      (and referenced (< depth 8))        (sample-node referenced)
+      (str/starts-with? type "number")    1
+      (str/starts-with? type "boolean")   true
+      (str/starts-with? type "map[")      {}
+      (= type "object")                   {}
+      :else                               "s")))
+
+(defn sample
+  "A value of the shape a node describes: every field of an object, the
+  first member of a union or enum, one element in an array. It is built
+  from the reference alone, so tests that use it follow the spec as it
+  changes."
+  [sections node]
+  (sample* (types-by-name sections) 0 (:type node) (:children node)))
+
 ;; --- items: the things cl4cl is checked against ---
 
 (defn- endpoints [sections]

@@ -42,6 +42,17 @@
   ([] (load-implemented implemented-file))
   ([file] (set (edn/read-string (slurp file)))))
 
+(defn write-implemented!
+  "Replace spec/implemented.edn with the given item keys, one per line."
+  [keys]
+  (spit implemented-file
+        (str ";; The spec items cl4cl implements, as [kind id] pairs matching\n"
+             ";; cl4cl.dev.spec/items. An item belongs here only if the `verify`\n"
+             ";; method for its kind passes for it (test/cl4cl/spec_test.clj).\n"
+             ";; `(cl4cl.spec-test/verified)` at the REPL lists the items that do.\n"
+             ";; Run `bb spec:checklist` after editing.\n"
+             "#{" (str/join "\n  " (map pr-str keys)) "}\n")))
+
 (defn- line [implemented {:keys [id title type optional? status] :as item}]
   (str "- [" (if (implemented (spec/item-key item)) "x" " ") "] `" id "`"
        (when title (str " (" title ")"))
