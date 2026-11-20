@@ -20,7 +20,7 @@ The design question to ask is "what would Rich Hickey do?". In practice:
 
 | Topic | Decision | Reason |
 |---|---|---|
-| HTTP | `java.net.http.HttpClient` (JDK 11+) via interop | No dependency; streams response bodies for SSE |
+| HTTP | `java.net.http.HttpClient` via interop; Java 21 is the minimum supported version | No dependency; streams response bodies for SSE |
 | JSON | `org.clojure/data.json` | Pure Clojure, no Jackson conflicts in users' projects |
 | Streaming | `stream` returns a reducible (`IReduceInit`) of events | Works with `reduce`/`transduce`/`run!`; deterministic connection cleanup |
 | Keys | Wire names as keywords | Matches the API docs one to one; no translation layer |

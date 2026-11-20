@@ -2,7 +2,7 @@
 
 Claude for Clojure: the Claude Messages API as functions over plain data.
 
-cl4cl talks to the API over raw HTTP. It needs JDK 11 or later and has one dependency besides Clojure, `org.clojure/data.json`. Requests and responses are ordinary maps that mirror the API's JSON, so anything in the [API reference](https://platform.claude.com/docs/en/api/messages) works without waiting for a library release.
+cl4cl talks to the API over raw HTTP. It needs Java 21 or later and has one dependency besides Clojure, `org.clojure/data.json`. Requests and responses are ordinary maps that mirror the API's JSON, so anything in the [API reference](https://platform.claude.com/docs/en/api/messages) works without waiting for a library release.
 
 Status: not released yet. Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
