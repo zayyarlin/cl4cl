@@ -1,4 +1,4 @@
-(defproject io.github.zayyarlin/cl4cl "0.1.0-SNAPSHOT"
+(defproject io.github.zayyarlin/cl4cl "0.1.0"
   :description "Claude for Clojure: a pure Clojure client for the Claude Messages API"
   :url "https://github.com/zayyarlin/cl4cl"
   :scm {:name "git" :url "https://github.com/zayyarlin/cl4cl"}

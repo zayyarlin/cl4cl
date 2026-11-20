@@ -4,11 +4,9 @@ Claude for Clojure: the Claude Messages API as functions over plain data.
 
 cl4cl talks to the API over raw HTTP. It needs Java 21 or later and has one dependency besides Clojure, `org.clojure/data.json`. Requests and responses are ordinary maps that mirror the API's JSON, so anything in the [API reference](https://platform.claude.com/docs/en/api/messages) works without waiting for a library release.
 
-Status: not released yet. Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
+Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
 ## Installation
-
-Not on Clojars yet. Once it is:
 
 ```clojure
 [io.github.zayyarlin/cl4cl "0.1.0"]                  ; Leiningen
@@ -618,7 +616,7 @@ lein record               # re-record the replay cassettes against the live API
 
 ## License
 
-Copyright © 2026
+Copyright © 2026 Zay Yar Lin
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
