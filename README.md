@@ -482,7 +482,7 @@ A failed call throws an `ex-info`. Its data:
 ;;     :error-code "ramp_limit_exceeded"    ; error.details.error_code, when present
 ;;     :message "..."
 ;;     :request-id "req_..."                ; quote this to Anthropic support
-;;     :retry-after-ms 2000                 ; when the API sent retry-after
+;;     :retry-after-ms 2000                 ; when the API sent retry-after in seconds
 ;;     :body {...}}                         ; the parsed error body, or the raw text
 ```
 
@@ -523,13 +523,16 @@ Every type derives from `:cl4cl.error/error`, and the retryable ones from `:cl4c
 
 ### Retries
 
-Retryable failures are retried before they reach you: twice by default, with exponential backoff and jitter. If the API sends `retry-after`, that delay is used instead.
+Retryable failures are retried before they reach you: twice by default, with exponential backoff and jitter. If the API sends `retry-after`, that delay is used instead, unless it is longer than `:max-retry-after-ms`.
 
 ```clojure
 (assoc client :retry {:max 5         ; extra attempts after the first
                       :base-ms 500   ; first delay, doubling each time
-                      :cap-ms 8000}) ; longest delay
+                      :cap-ms 8000   ; longest computed delay
+                      :max-retry-after-ms 60000}) ; optional; the longest retry-after to obey
 ```
+
+A `retry-after` that is longer than `:max-retry-after-ms` (one minute unless you set it), negative or not a number of seconds is ignored and the computed delay is used, so a response cannot make your thread sleep for hours.
 
 A streamed call is retried only if it fails before the first event. Once events have reached you, a failure is thrown, because you have already seen part of the reply.
 

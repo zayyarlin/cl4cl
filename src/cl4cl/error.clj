@@ -44,8 +44,14 @@
   (let [parsed (try (json/read-str body) (catch Exception _ nil))]
     (when (map? parsed) parsed)))
 
-(defn- retry-after-ms [headers]
-  (some-> (get headers "retry-after") parse-double (* 1000) long))
+(defn- retry-after-ms
+  "The retry-after header in milliseconds, or nil when it is absent or is
+  not a number of seconds from zero up. The header comes from outside, so
+  a date, a negative number, NaN or an absurd value is treated as absent."
+  [headers]
+  (when-let [seconds (some-> (get headers "retry-after") parse-double)]
+    (when (<= 0 seconds Integer/MAX_VALUE)
+      (long (* 1000 seconds)))))
 
 (defn- error
   "Build the ex-info for an API error payload {:type \"error\" :error {...}}."

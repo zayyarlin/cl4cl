@@ -52,4 +52,11 @@
     (is (<= 99 (http/backoff-ms p 1 e 0.999) 100))
     (is (= 112 (http/backoff-ms p 2 e 0.0)) "capped at :cap-ms")
     (is (= 2000 (http/backoff-ms p 1 (err ::error/rate-limit :retry-after-ms 2000) 0.5))
-        "the server's retry-after wins")))
+        "the server's retry-after wins")
+    (is (= 75 (http/backoff-ms p 1 (err ::error/rate-limit :retry-after-ms 86400000) 0.0))
+        "unless it is longer than a minute")
+    (is (= 75 (http/backoff-ms p 1 (err ::error/rate-limit :retry-after-ms -5000) 0.0))
+        "or negative")
+    (is (= 90000 (http/backoff-ms (assoc p :max-retry-after-ms 120000) 1
+                                  (err ::error/rate-limit :retry-after-ms 90000) 0.0))
+        "and the limit is part of the policy")))

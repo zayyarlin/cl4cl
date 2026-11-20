@@ -53,7 +53,8 @@
     :version     the anthropic-version header
     :betas       beta names sent on every call
     :timeout-ms  for non-streaming calls
-    :retry       {:max :base-ms :cap-ms}
+    :retry       {:max :base-ms :cap-ms}, and optionally
+                 :max-retry-after-ms, default 60000
 
   An :api-key given here wins over an :auth-token. To vary a setting for
   some calls, assoc onto the client."

@@ -165,7 +165,7 @@ Every failure is an `ex-info` with this data:
  :error-code  "ramp_limit_exceeded"      ; error.details.error_code, when present
  :message     "..."
  :request-id  "req_..."
- :retry-after-ms 2000                    ; when the header is present
+ :retry-after-ms 2000                    ; when the header is a number of seconds
  :body        {...}}
 ```
 
@@ -199,7 +199,7 @@ A refusal is not an error: it is an HTTP 200 with `:stop_reason "refusal"`, and 
 
 ## Retries
 
-Failures whose type is `:cl4cl.error/retryable` are retried according to the client's `:retry` map, with exponential backoff and jitter. A `retry-after` header overrides the computed delay.
+Failures whose type is `:cl4cl.error/retryable` are retried according to the client's `:retry` map, with exponential backoff and jitter. A `retry-after` header overrides the computed delay when it is a number of seconds no longer than the policy's `:max-retry-after-ms`, one minute by default. The header is input from outside: one that is malformed, negative or longer than that is ignored, so a response cannot make a caller sleep for hours.
 
 A streaming call is retried only if it fails before the first event has been handed to the caller. After that the error propagates, because the caller has already seen partial output.
 

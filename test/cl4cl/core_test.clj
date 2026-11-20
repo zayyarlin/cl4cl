@@ -76,6 +76,14 @@
       (is (= ::error/rate-limit (:type d)))
       (is (= 1500 (:retry-after-ms d)))
       (is (= "req_h" (:request-id d)))))
+  (testing "a retry-after that is not a sane number of seconds is left out"
+    (doseq [value ["-5" "NaN" "Infinity" "1e300" "Wed, 21 Oct 2026 07:28:00 GMT"]]
+      (let [d (try (core/response {:status 429
+                                   :headers {"retry-after" value}
+                                   :body "{\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"slow\"}}"})
+                   (catch ExceptionInfo e (ex-data e)))]
+        (is (= ::error/rate-limit (:type d)) value)
+        (is (not (contains? d :retry-after-ms)) value))))
   (testing "a body that is not JSON"
     (let [d (try (core/response {:status 502 :headers {} :body "<html>Bad Gateway</html>"})
                  (catch ExceptionInfo e (ex-data e)))]

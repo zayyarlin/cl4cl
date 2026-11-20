@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](https://keepachangelog.com/).
 
 ## [Unreleased]
+### Fixed
+- A `retry-after` header is obeyed only when it is a number of seconds from zero up to the retry policy's new optional `:max-retry-after-ms` (default 60000). Before, a large value made the caller sleep for as long as it said, a negative one threw from `Thread/sleep`, and `Infinity` replaced the API's error with an `IllegalArgumentException`.
 
 ## [0.1.1] - 2026-11-20
 ### Added

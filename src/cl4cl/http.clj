@@ -56,12 +56,16 @@
 
 (defn backoff-ms
   "How long to wait before retry number attempt (from 1): the server's
-  retry-after if it sent one, else exponential backoff from :base-ms,
-  capped at :cap-ms, scaled by jitter, a number in [0, 1)."
-  [{:keys [base-ms cap-ms]} attempt e jitter]
-  (or (:retry-after-ms (ex-data e))
+  retry-after if it sent one of at most :max-retry-after-ms (default
+  60000), else exponential backoff from :base-ms, capped at :cap-ms,
+  scaled by jitter, a number in [0, 1). A longer retry-after is ignored
+  rather than obeyed, so a response cannot park the caller for hours."
+  [{:keys [base-ms cap-ms max-retry-after-ms] :or {max-retry-after-ms 60000}} attempt e jitter]
+  (let [retry-after (:retry-after-ms (ex-data e))]
+    (if (and retry-after (<= 0 retry-after max-retry-after-ms))
+      retry-after
       (let [ceiling (min cap-ms (* base-ms (bit-shift-left 1 (dec attempt))))]
-        (long (* ceiling (+ 0.75 (* 0.25 jitter)))))))
+        (long (* ceiling (+ 0.75 (* 0.25 jitter))))))))
 
 (defn with-retry
   "Call the thunk f, retrying while it throws a retryable cl4cl error, up
