@@ -8,4 +8,4 @@
   :profiles {:dev {:source-paths ["dev"]}}
   :test-selectors {:default (complement :integration)
                    :integration :integration}
-  :repl-options {:init-ns cl4cl.core})
+  :repl-options {:init-ns user})

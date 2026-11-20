@@ -2,7 +2,7 @@
 
 cl4cl ("Claude for Clojure") is a pure Clojure client for the Claude Messages API over raw HTTP. It does not wrap the Java SDK.
 
-Status: the spec tooling exists (`dev/`, `spec/`, `doc/spec-checklist.md`). The library itself is not implemented yet.
+Status: v0.1 is implemented as described here. `doc/spec-checklist.md` shows what is covered; the Message Batches endpoints are the part that is not.
 
 ## Principles
 
@@ -51,7 +51,7 @@ Runtime dependencies are therefore Clojure and data.json only.
 (claude/count-tokens client body)            ; POST /v1/messages/count_tokens
 ```
 
-Every call takes an optional third argument of per-call options, kept out of the body:
+Every call takes an optional third argument of per-call options, kept out of the body: `:betas`, `:timeout-ms`, `:headers`, and `:path` and `:method` for an endpoint cl4cl has no function for yet.
 
 ```clojure
 (claude/create client body {:betas ["compact-2026-01-12"] :timeout-ms 30000 :headers {...}})
@@ -86,6 +86,7 @@ A caller who wants a different HTTP client, a proxy, request signing or logging 
 | `:version` | `2026-10-21`; sent as `anthropic-version` |
 | `:betas` | `[]`; merged with per-call `:betas` into one `anthropic-beta` header |
 | `:timeout-ms` | 600000 for non-streaming calls |
+| `:connect-timeout-ms` | 30000 |
 | `:retry` | `{:max 2 :base-ms 500 :cap-ms 8000}` |
 
 An explicit `:api-key` wins over `:auth-token`. If neither is given or found in the environment, `client` throws. Changing a setting for one call is `(assoc client :timeout-ms 5000)`.
@@ -130,7 +131,8 @@ Writing must not use data.json's default key function, which calls `name` and so
 
 - `text_delta`, `thinking_delta` and `signature_delta` append to their block.
 - `citations_delta` conjoins onto the block's `:citations`.
-- `input_json_delta` appends `partial_json` to a buffer that is parsed at `content_block_stop`; an empty buffer becomes `{}`.
+- `input_json_delta` appends `partial_json` to a buffer kept in the block's metadata and parsed at `content_block_stop`. If the buffer is not valid JSON, as when `max_tokens` cuts a tool call short, `:input` is left alone and the text stays in the metadata under `:cl4cl.stream/partial-json`.
+- Deltas are applied by the multimethod `cl4cl.stream/apply-delta`, so a caller can add a method for a delta type cl4cl does not know yet.
 - `message_delta` merges `stop_reason`, `stop_details` and the cumulative `usage`.
 - Unknown event and delta types are ignored.
 
@@ -173,7 +175,8 @@ Every failure is an `ex-info` with this data:
 | `timeout_error` | `:cl4cl.error/timeout` | `:cl4cl.error/retryable` |
 | `overloaded_error` | `:cl4cl.error/overloaded` | `:cl4cl.error/retryable` |
 | no response | `:cl4cl.error/connection` | `:cl4cl.error/retryable` |
-| anything else | `:cl4cl.error/unknown` | retryable if the status is 408, 409, 429 or 5xx |
+| anything else | `:cl4cl.error/unknown` | |
+| anything else, with status 408, 409, 429 or 5xx | `:cl4cl.error/unknown-retryable` | `:cl4cl.error/unknown`, `:cl4cl.error/retryable` |
 
 Every type also derives from `:cl4cl.error/error`. Callers test with `isa?`, and can extend the hierarchy themselves:
 
@@ -222,10 +225,13 @@ Four tests hold the system together:
 3. **`implemented-items-verify`**: an item is marked implemented only if `verify` passes for it. A kind with no `verify` method fails.
 4. **`checklist-is-current`**: the committed checklist matches what the generator produces.
 
-Two more will be added with the implementation:
+Three more guard the edges:
 
-- **Robustness for everything, implemented or not**: every stream event, delta and block in the spec, plus invented unknown ones, passes through the parser and accumulator without throwing.
-- **Worked examples**: the complete SSE transcripts in `spec/upstream/streaming.md` are replayed as end-to-end fixtures.
+5. **`nothing-in-the-spec-breaks-a-stream`**: every stream event, delta and block in the spec, plus invented unknown ones, passes through the parser and accumulator without throwing.
+6. **`documented-streams-accumulate`**: the complete SSE transcripts in `spec/upstream/streaming.md` are replayed end to end.
+7. **`verify-rejects-what-cl4cl-does-not-handle`**: `verify` says no to invented items, so a pass means something.
+
+`(cl4cl.spec-test/verified)` at the REPL returns the items that verify; `spec/implemented.edn` should equal it.
 
 Live tests are tagged `^:integration`, need `ANTHROPIC_API_KEY`, and are excluded from the default `lein test`.
 
