@@ -11,8 +11,8 @@ Messages, streaming, token counting and Message Batches are implemented. `doc/sp
 ## Installation
 
 ```clojure
-[io.github.zayyarlin/cl4cl "0.1.0"]                  ; Leiningen
-io.github.zayyarlin/cl4cl {:mvn/version "0.1.0"}     ; deps.edn
+[io.github.zayyarlin/cl4cl "0.1.1"]                  ; Leiningen
+io.github.zayyarlin/cl4cl {:mvn/version "0.1.1"}     ; deps.edn
 ```
 
 cl4cl needs Clojure 1.11 or later and does not bring its own.
