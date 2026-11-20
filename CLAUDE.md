@@ -51,6 +51,14 @@ The procedure for a new upstream spec version is in `doc/design.md` under "Evolv
 
 Three layers run in `lein test` with no API key: unit tests with `http/send!` stubbed, the spec-driven `verify` tests, and `cl4cl.replay-test`, which replays the recorded exchanges in `test/cassettes/` through a local HTTP server. Scenarios are data in `cl4cl.dev.cassette/scenarios`; a new scenario needs `lein record NAME` before the suite passes. Never edit a cassette by hand. If a change to cl4cl alters the request it sends or the value it returns, the replay test fails: decide whether the change is intended, and re-record only if it is.
 
+## Releasing
+
+The artifact is `io.github.zayyarlin/cl4cl` on Clojars. A release is permanent, and deploying is the user's step, not Claude's.
+
+1. Set the version in `project.clj` (drop `-SNAPSHOT`), date the entry in `CHANGELOG.md`, run `lein test`, commit as "Release X.Y.Z", and tag `vX.Y.Z`.
+2. The user runs `bin/deploy`, which reads the Clojars username and deploy token from the macOS Keychain item `clojars-deploy`, refuses a dirty tree or an untagged release, runs the tests and deploys. `bin/deploy --dry-run` stops before the deploy.
+3. Push `main` and the tag, then set the next `-SNAPSHOT` version.
+
 ## Commits
 
 Commit at natural intervals: one coherent step per commit, with a spec refresh kept apart from the code that responds to it.
