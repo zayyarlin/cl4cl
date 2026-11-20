@@ -17,8 +17,9 @@
            (str/split-lines (slurp file)))
      {})))
 
-(defn api-key
-  "The API key from .env, else from the environment, else nil."
-  []
-  (not-empty (or (get (dotenv) "ANTHROPIC_API_KEY")
-                 (System/getenv "ANTHROPIC_API_KEY"))))
+(defn setting
+  "A setting from .env, else from the environment, else nil."
+  [k]
+  (not-empty (or (get (dotenv) k) (System/getenv k))))
+
+(defn api-key [] (setting "ANTHROPIC_API_KEY"))

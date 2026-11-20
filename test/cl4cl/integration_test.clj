@@ -1,14 +1,15 @@
 (ns cl4cl.integration-test
   "Calls the real API. Excluded from `lein test`; run with
   `lein test :integration`. Needs ANTHROPIC_API_KEY in .env or the
-  environment."
+  environment. Uses Claude Haiku 5.5 to keep the cost down; set
+  CL4CL_MODEL to test against another model."
   (:require [cl4cl.core :as core]
             [cl4cl.dev.env :as env]
             [cl4cl.error :as error]
             [clojure.test :refer [deftest is]]))
 
 (def ^:private body
-  {:model "claude-opus-5-5"
+  {:model (or (env/setting "CL4CL_MODEL") "claude-haiku-5-5")
    :max_tokens 2048
    :messages [{:role "user" :content "Reply with the single word: pong"}]})
 

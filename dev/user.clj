@@ -4,15 +4,33 @@
     (ask \"What is a transducer?\")     ; one request, returns the message
     (say \"Write a haiku about parens\") ; streams the text as it arrives
     (text *1)                          ; the text of a message
+    (use-model! \"claude-opus-5-5\")   ; switch model for later calls
+    (ask \"Hi\" {:model \"claude-sonnet-5-5\"}) ; or for one call
 
-  The API key is read from .env (ANTHROPIC_API_KEY=...) or the environment."
+  These are development helpers, not part of the library. The API key is read from .env (ANTHROPIC_API_KEY=...) or the environment."
   (:require [cl4cl.core :as claude]
             [cl4cl.dev.env :as env]
             [cl4cl.stream :as stream]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as str]))
 
-(def model "claude-opus-5-5")
+(def default-model
+  "Claude Haiku 5.5, to keep experiments cheap. CL4CL_MODEL in .env overrides it."
+  "claude-haiku-5-5")
+
+(defonce ^:private chosen-model (atom nil))
+
+(defn model
+  "The model the helpers use: the one set with `use-model!`, else
+  CL4CL_MODEL from .env, else `default-model`."
+  []
+  (or @chosen-model (env/setting "CL4CL_MODEL") default-model))
+
+(defn use-model!
+  "Use this model for later calls. (use-model! nil) goes back to the default."
+  [id]
+  (reset! chosen-model id)
+  (model))
 
 (defn client
   "A client using the key in .env or the environment."
@@ -24,15 +42,10 @@
   (body \"Hi\" {:max_tokens 100 :system \"Be brief.\"})."
   ([prompt] (body prompt {}))
   ([prompt extra]
-   (merge {:model model
+   (merge {:model (model)
            :max_tokens 16000
-           ;; If a safety classifier declines the request, let the API
-           ;; re-run it on a fallback model. Needs the beta in `opts`.
-           :fallbacks "default"
            :messages [{:role "user" :content prompt}]}
           extra)))
-
-(def opts {:betas ["server-side-fallback-2026-07-01"]})
 
 (defn text
   "The text of a message, without thinking or tool blocks."
@@ -43,7 +56,7 @@
   "Send a prompt and return the whole message."
   ([prompt] (ask prompt {}))
   ([prompt extra]
-   (claude/create (client) (body prompt extra) opts)))
+   (claude/create (client) (body prompt extra))))
 
 (defn- print-text-delta [event]
   (when (= "text_delta" (get-in event [:delta :type]))
@@ -57,6 +70,6 @@
   ([prompt extra]
    (let [message (transduce (map print-text-delta)
                             stream/accumulate
-                            (claude/stream (client) (body prompt (merge {:max_tokens 64000} extra)) opts))]
+                            (claude/stream (client) (body prompt (merge {:max_tokens 64000} extra))))]
      (println)
      message)))

@@ -18,7 +18,8 @@ Work interactively against the running nREPL server rather than starting a JVM p
 
 - `lein repl :headless` starts the server (writes `.nrepl-port`); `dev/` is on its classpath
 - `bb eval '(+ 1 2)'` or `bb eval < file.clj` evaluates in it, starting in the `user` namespace
-- `dev/user.clj` has helpers for live calls (`ask`, `say`, `client`); they read `ANTHROPIC_API_KEY` from `.env`, which is git-ignored
+- `dev/user.clj` has helpers for live calls (`ask`, `say`, `client`); they are not part of the library. They read `ANTHROPIC_API_KEY` from `.env`, which is git-ignored
+- Live calls, in the helpers and the integration tests, default to `claude-haiku-5-5` to save cost. Switch with `(use-model! "...")`, a `:model` key, or `CL4CL_MODEL` in `.env`
 - `bb eval "(require 'cl4cl.spec-test :reload) (clojure.test/run-tests 'cl4cl.spec-test)"` runs one test namespace
 - `bb eval "(clojure.test/test-vars [#'cl4cl.spec-test/spec-parses])"` runs one test
 
