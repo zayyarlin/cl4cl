@@ -9,8 +9,12 @@
 (defn- key->str [k]
   (if (keyword? k) (subs (str k) 1) (str k)))
 
-(defn write-str [x]
+(defn write-str
+  "Data to JSON text. A keyword key keeps its namespace."
+  [x]
   (json/write-str x :key-fn key->str :escape-slash false))
 
-(defn read-str [s]
+(defn read-str
+  "JSON text to data, with object keys as keywords."
+  [s]
   (json/read-str s :key-fn keyword))

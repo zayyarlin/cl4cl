@@ -282,6 +282,15 @@ The pipeline is built so an agent can run it without judgment calls until step 5
 
 The agent's instructions belong in a project skill once the first manual update has been done and the rough edges are known.
 
+## How a consumer's coding agent learns cl4cl
+
+An agent in another project guesses from the official SDKs unless told otherwise, and those guesses are wrong here in predictable ways (kebab-case keys, keywords as values, treating a stream as a sequence). Two things travel inside the jar, so they always match the installed version:
+
+- **Docstrings**, the reference for each function.
+- **The guide**, `resources/cl4cl/guide.md`, returned by `(cl4cl.core/guide)`: the rules, the mistakes to avoid, and one example of each kind of call.
+
+Nothing can force an agent to look, so the pointer is repeated wherever one is likely to land: the `cl4cl.core` namespace docstring, the top of the README, the project description shown on Clojars, and a snippet in the README for the consumer to paste into their own `CLAUDE.md` or `AGENTS.md`. The last is the only one that is certain to be read.
+
 ## Scope
 
 **Done:** `client`, `request`, `response`, `execute`, `lines`, `create`, `stream`, `final-message`, `count-tokens`, Message Batches, errors, retries, beta headers.

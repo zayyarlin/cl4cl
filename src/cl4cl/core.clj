@@ -9,7 +9,12 @@
                     :max_tokens 1024
                     :messages [{:role \"user\" :content \"Hello\"}]})
 
-  The result is the response body as a map."
+  The result is the response body as a map.
+
+  Before writing code against this library, read its guide, which covers
+  every function, the common mistakes and worked examples:
+
+    (println (cl4cl.core/guide))"
   (:require [cl4cl.error :as error]
             [cl4cl.http :as http]
             [cl4cl.json :as json]
@@ -19,7 +24,18 @@
   (:import [java.io InputStream]
            [java.net URLEncoder]))
 
+(defn guide
+  "The usage guide for this version of cl4cl, as markdown text: the rules,
+  the mistakes to avoid, and an example of every kind of call. Coding
+  agents and people new to the library should read it first.
+
+    (println (guide))"
+  []
+  (slurp (io/resource "cl4cl/guide.md")))
+
 (def defaults
+  "The client settings used when neither the options nor the environment
+  say otherwise."
   {:base-url "https://api.anthropic.com"
    :version "2026-10-21"
    :betas []

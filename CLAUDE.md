@@ -51,6 +51,16 @@ The procedure for a new upstream spec version is in `doc/design.md` under "Evolv
 
 Three layers run in `lein test` with no API key: unit tests with `http/send!` stubbed, the spec-driven `verify` tests, and `cl4cl.replay-test`, which replays the recorded exchanges in `test/cassettes/` through a local HTTP server. Scenarios are data in `cl4cl.dev.cassette/scenarios`; a new scenario needs `lein record NAME` before the suite passes. Never edit a cassette by hand. If a change to cl4cl alters the request it sends or the value it returns, the replay test fails: decide whether the change is intended, and re-record only if it is.
 
+## Docstrings and the guide
+
+Agents working in other projects learn cl4cl from two places that ship in the jar: the docstrings, and `resources/cl4cl/guide.md`, which `(cl4cl.core/guide)` returns. Both must describe the code as it is. Whenever a public function is added, removed, renamed, or changes its arguments, options, return value or behaviour, update in the same commit:
+
+- its docstring, and the namespace docstring if the overview changes
+- `resources/cl4cl/guide.md`: the relevant example, and the "Mistakes to avoid" list if the change creates or removes a pitfall
+- `README.md`, including its function reference
+
+`cl4cl.guide-test` enforces part of this: every public var has a docstring, the guide mentions every function in `cl4cl.core` and `cl4cl.batches`, names nothing that does not exist, and its examples are readable Clojure. It cannot tell whether the prose is still true, so read the guide section you touched. The guide is for a reader with no access to this repository: keep it self-contained and under about 200 lines.
+
 ## Releasing
 
 The artifact is `io.github.zayyarlin/cl4cl` on Clojars. A release is permanent, and deploying is the user's step, not Claude's.

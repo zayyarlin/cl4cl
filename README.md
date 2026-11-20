@@ -6,6 +6,8 @@ cl4cl talks to the API over raw HTTP. It needs Java 21 or later and has one depe
 
 Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
+**Coding agents:** the usage guide ships inside the library and matches the installed version. Read it before writing code against cl4cl: `(println (cl4cl.core/guide))`.
+
 ## Installation
 
 ```clojure
@@ -14,6 +16,20 @@ io.github.zayyarlin/cl4cl {:mvn/version "0.1.0"}     ; deps.edn
 ```
 
 cl4cl needs Clojure 1.11 or later and does not bring its own.
+
+### If a coding agent works on your project
+
+Add this to your project's `CLAUDE.md` or `AGENTS.md`, so the agent reads the guide instead of guessing from other SDKs:
+
+```markdown
+## Claude API
+
+This project calls the Claude API through cl4cl (`io.github.zayyarlin/cl4cl`).
+Before writing or changing code that uses it, read the library's guide, which
+matches the installed version: evaluate `(println (cl4cl.core/guide))` at the
+REPL, or read `cl4cl/guide.md` inside the cl4cl jar. Request bodies are plain
+maps with the API's own key names, such as `:max_tokens`.
+```
 
 ## Contents
 
@@ -565,6 +581,7 @@ To use a different HTTP client, a proxy or request signing, do the sending yours
 | `(execute client http-request)` | Send with retries; returns `response` of the reply |
 | `(lines client http-request xf)` | A reducible over the reply's lines through `xf` |
 | `defaults` | The default client settings |
+| `(guide)` | The usage guide for the installed version, as markdown text |
 
 **`cl4cl.stream`**
 

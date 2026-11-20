@@ -1,5 +1,5 @@
 (defproject io.github.zayyarlin/cl4cl "0.1.1-SNAPSHOT"
-  :description "Claude for Clojure: a pure Clojure client for the Claude Messages API"
+  :description "Claude for Clojure: a pure Clojure client for the Claude Messages API. Usage guide for people and coding agents: (println (cl4cl.core/guide))"
   :url "https://github.com/zayyarlin/cl4cl"
   :scm {:name "git" :url "https://github.com/zayyarlin/cl4cl"}
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

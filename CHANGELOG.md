@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](https://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- `cl4cl.core/guide`: the usage guide, shipped in the jar as `cl4cl/guide.md`, for coding agents and new users.
 
 ## 0.1.0 - 2026-11-20
 ### Added
