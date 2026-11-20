@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Deploy the current version to Clojars, with credentials from the macOS Keychain.
 #
-# One-time setup (prompts for the deploy token, so it never lands in shell history):
-#   security add-generic-password -s clojars-deploy -a <clojars-username> -w
-# To replace the token later, add -U to the same command.
+# One-time setup, and also how to replace the token later. It prompts for the
+# deploy token without echoing it, so it stays out of the shell history (zsh):
+#   read -s "token?Clojars deploy token: " && \
+#     security add-generic-password -U -s clojars-deploy -a CLOJARS_USERNAME -w "$token"; unset token
 #
 # Usage: bin/deploy            test, then deploy
 #        bin/deploy --dry-run  do everything except the deploy itself
@@ -21,12 +22,15 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 if ! item=$(security find-generic-password -s "$service" 2>/dev/null); then
-  echo "No Keychain item named '$service'. Create it with:" >&2
-  echo "  security add-generic-password -s $service -a <clojars-username> -w" >&2
+  echo "No Keychain item named '$service'. See the setup command at the top of $0." >&2
   exit 1
 fi
 username=$(printf '%s\n' "$item" | awk -F'"' '/"acct"/ {print $4}')
 token=$(security find-generic-password -s "$service" -w)
+if [ -z "$token" ]; then
+  echo "The Keychain item '$service' holds an empty token. See the setup command at the top of $0." >&2
+  exit 1
+fi
 
 version=$(sed -n 's/^(defproject [^ ]* "\(.*\)".*/\1/p' project.clj)
 case "$version" in
