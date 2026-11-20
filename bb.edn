@@ -1,0 +1,13 @@
+{:paths ["dev"]
+ :tasks
+ {:requires ([cl4cl.dev.spec :as spec]
+             [cl4cl.dev.checklist :as checklist])
+  eval {:doc "Evaluate code in the running nREPL: bb eval '(+ 1 2)' or bb eval < file.clj"
+        :requires ([nrepl-eval])
+        :task (apply nrepl-eval/-main *command-line-args*)}
+  spec:fetch {:doc "Replace spec/upstream/ with the current upstream documents"
+              :task (spec/fetch!)}
+  spec:checklist {:doc "Regenerate doc/spec-checklist.md"
+                  :task (checklist/write!)}
+  spec:update {:doc "Fetch the upstream spec and regenerate the checklist"
+               :depends [spec:fetch spec:checklist]}}}
