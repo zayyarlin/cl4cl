@@ -6,8 +6,20 @@ cl4cl talks to the API over raw HTTP. It needs Java 21 or later and has one depe
 
 Status: not released yet. Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
+## Installation
+
+Not on Clojars yet. Once it is:
+
+```clojure
+[io.github.zayyarlin/cl4cl "0.1.0"]                  ; Leiningen
+io.github.zayyarlin/cl4cl {:mvn/version "0.1.0"}     ; deps.edn
+```
+
+cl4cl needs Clojure 1.11 or later and does not bring its own.
+
 ## Contents
 
+- [Installation](#installation)
 - [The idea](#the-idea)
 - [Client](#client)
 - [Creating a message](#creating-a-message)
