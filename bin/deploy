@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Deploy the current version to Clojars, with credentials from the macOS Keychain.
+#
+# One-time setup (prompts for the deploy token, so it never lands in shell history):
+#   security add-generic-password -s clojars-deploy -a <clojars-username> -w
+# To replace the token later, add -U to the same command.
+#
+# Usage: bin/deploy            test, then deploy
+#        bin/deploy --dry-run  do everything except the deploy itself
+set -euo pipefail
+
+service=clojars-deploy
+cd "$(dirname "$0")/.."
+
+dry_run=false
+[ "${1:-}" = "--dry-run" ] && dry_run=true
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "The working tree has uncommitted changes. Commit or stash them first." >&2
+  exit 1
+fi
+
+if ! item=$(security find-generic-password -s "$service" 2>/dev/null); then
+  echo "No Keychain item named '$service'. Create it with:" >&2
+  echo "  security add-generic-password -s $service -a <clojars-username> -w" >&2
+  exit 1
+fi
+username=$(printf '%s\n' "$item" | awk -F'"' '/"acct"/ {print $4}')
+token=$(security find-generic-password -s "$service" -w)
+
+version=$(sed -n 's/^(defproject [^ ]* "\(.*\)".*/\1/p' project.clj)
+case "$version" in
+  *-SNAPSHOT) ;;
+  *)
+    # A release is permanent, so it must be the tagged commit.
+    if [ "$(git describe --tags --exact-match 2>/dev/null)" != "v$version" ]; then
+      echo "Version $version is a release, but HEAD is not tagged v$version." >&2
+      echo "Tag it first: git tag -a v$version -m \"cl4cl $version\"" >&2
+      exit 1
+    fi
+    ;;
+esac
+
+echo "Testing cl4cl $version..."
+lein test
+
+if $dry_run; then
+  echo "Dry run: would deploy $version to Clojars as $username."
+  exit 0
+fi
+
+echo "Deploying cl4cl $version to Clojars as $username..."
+CLOJARS_USERNAME="$username" CLOJARS_PASSWORD="$token" lein deploy clojars
