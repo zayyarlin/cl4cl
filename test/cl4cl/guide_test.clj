@@ -4,16 +4,19 @@
             [cl4cl.core :as core]
             [cl4cl.error]
             [cl4cl.json]
+            [cl4cl.message]
             [cl4cl.stream]
+            [cl4cl.tools]
             [clojure.string :as str]
             [clojure.test :refer [deftest is]]))
 
 (def ^:private public-namespaces
-  '[cl4cl.core cl4cl.stream cl4cl.batches cl4cl.error cl4cl.json])
+  '[cl4cl.core cl4cl.message cl4cl.tools cl4cl.stream cl4cl.batches cl4cl.error cl4cl.json])
 
 (def ^:private aliases
   "The aliases the guide's examples use."
-  {"claude" "cl4cl.core" "stream" "cl4cl.stream" "batches" "cl4cl.batches"
+  {"claude" "cl4cl.core" "message" "cl4cl.message" "tools" "cl4cl.tools"
+   "stream" "cl4cl.stream" "batches" "cl4cl.batches"
    "error" "cl4cl.error" "json" "cl4cl.json"})
 
 (defn- code-blocks [markdown]
@@ -26,14 +29,14 @@
 
 (deftest the-guide-covers-every-function
   (let [guide (core/guide)]
-    (doseq [n '[cl4cl.core cl4cl.batches]
+    (doseq [n '[cl4cl.core cl4cl.message cl4cl.tools cl4cl.batches]
             [sym v] (ns-publics n)
             :when (fn? @v)]
-      (is (re-find (re-pattern (str "\\b" (java.util.regex.Pattern/quote (name sym)) "\\b")) guide)
+      (is (re-find (re-pattern (str "(?<![\\w-])" (java.util.regex.Pattern/quote (name sym)) "(?![\\w-])")) guide)
           (str "the guide does not mention " n "/" sym)))))
 
 (deftest the-guide-names-only-things-that-exist
-  (doseq [[_ alias sym] (re-seq #"(?<![:\w.])(claude|stream|batches|error|json)/([a-z][a-z0-9?!*-]*)" (core/guide))]
+  (doseq [[_ alias sym] (re-seq #"(?<![:\w.])(claude|message|tools|stream|batches|error|json)/([a-z][a-z0-9?!*-]*)" (core/guide))]
     (is (ns-resolve (symbol (aliases alias)) (symbol sym))
         (str "the guide mentions " alias "/" sym ", which does not exist")))
   (doseq [[_ kw] (re-seq #"::error/([a-z-]+)" (core/guide))]

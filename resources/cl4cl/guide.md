@@ -15,9 +15,10 @@ For which fields exist and what a model accepts, the authority is the API refere
 - `:max-tokens` is wrong; write `:max_tokens`. No key is ever kebab-case.
 - `{:role :user}` is wrong; write `{:role "user"}`. The same goes for every `:type`.
 - `stream` and `batches/results` return a reducible, not a sequence. `map`, `first`, `doseq` and `count` do not work on it. Use `run!`, `reduce`, `transduce` or `(into [] ...)`.
-- There is no tool-running helper and no builder functions. Write the loop below.
-- When continuing a conversation, append the reply's `:content` exactly as received. Do not filter out thinking blocks or rebuild the blocks.
-- `:content` is a vector of blocks of several types. Do not assume `(first (:content m))` is the text.
+- Do not write your own tool loop; use `tools/run`. A handler returns its result and does not build the `tool_result` block.
+- When continuing a conversation, append the reply's `:content` exactly as received, which `message/reply` does. Do not filter out thinking blocks or rebuild the blocks.
+- `:content` is a vector of blocks of several types. Do not assume `(first (:content m))` is the text; use `message/text`.
+- The helpers in `cl4cl.message` only read and build the API's own maps. There are no other builders: write the rest of a body as a literal map.
 - Check `:stop_reason` before using `:content`. `"refusal"` and `"max_tokens"` are normal responses, not exceptions.
 - Do not write a retry loop for rate limits or server errors; cl4cl already retries them.
 
@@ -25,6 +26,8 @@ For which fields exist and what a model accepts, the authority is the API refere
 
 ```clojure
 (require '[cl4cl.core :as claude]
+         '[cl4cl.message :as message]
+         '[cl4cl.tools :as tools]
          '[cl4cl.stream :as stream]
          '[cl4cl.batches :as batches]
          '[cl4cl.error :as error])
@@ -45,16 +48,15 @@ The client is an immutable map: make one and share it. Other options: `:auth-tok
      :system "Be concise."
      :messages [{:role "user" :content "What is a transducer?"}]}))
 
-(defn text [message]
-  (apply str (keep #(when (= "text" (:type %)) (:text %)) (:content message))))
-
 (:stop_reason message)             ; "end_turn", "max_tokens", "tool_use", "refusal", ...
-(text message)
+(message/text message)             ; the text blocks joined, as one string
 (:usage message)                   ; {:input_tokens 14 :output_tokens 210 ...}
 (:cl4cl/request-id (meta message))
 ```
 
 `(claude/count-tokens client body)` takes the same body without `:max_tokens` and returns `{:input_tokens n}`.
+
+With a structured output format in the body (`:output_config {:format {:type "json_schema" :schema {...}}}`), `(message/data message)` is the reply parsed as JSON with keyword keys.
 
 ## Streaming
 
@@ -70,6 +72,9 @@ Use `stream` for long replies; it has no total timeout, only `:idle-timeout-ms`,
 
 (transduce (map show) stream/accumulate (claude/stream client body))
 
+;; only the text, piece by piece
+(run! print (eduction (stream/text-deltas) (claude/stream client body)))
+
 ;; only the finished message, the same map `create` returns
 (claude/final-message (claude/stream client body))
 
@@ -81,50 +86,61 @@ Events are the API's own: `{:type "content_block_delta" :index 0 :delta {:type "
 
 ## Conversations
 
-The API is stateless. Send every turn each time.
+The API is stateless. Send every turn each time. `message/reply` appends the reply as the assistant's turn and `message/say` appends a user turn.
 
 ```clojure
-(let [reply (claude/create client body)]
-  (claude/create client
-    (update body :messages conj
-            {:role "assistant" :content (:content reply)}
-            {:role "user" :content "Say more."})))
+(let [answer (claude/create client body)]
+  (claude/create client (-> body (message/reply answer) (message/say "Say more."))))
+
+;; an image or a PDF is a content block, built from its bytes
+(message/say body [(message/image png-bytes "image/png")
+                   (message/document pdf-bytes)
+                   {:type "text" :text "Compare the chart with the report."}])
 ```
 
 ## Tools
 
+Declare the tools in the body and give `tools/run` a map from each tool's name to a function of its input. It calls the API, runs the tools Claude asks for, sends the results back, and repeats until Claude answers.
+
 ```clojure
-(def tools
-  [{:name "get_weather"
-    :description "Get the current weather for a city."
-    :input_schema {:type "object"
-                   :properties {:city {:type "string"}}
-                   :required ["city"]}}])
+(def body
+  {:model "claude-opus-5-5" :max_tokens 16000
+   :tools [{:name "get_weather"
+            :description "Get the current weather for a city."
+            :input_schema {:type "object"
+                           :properties {:city {:type "string"}}
+                           :required ["city"]}}]
+   :messages [{:role "user" :content "Weather in Paris?"}]})
 
-(defn run-tool [{:keys [id name input]}]
-  (try
-    {:type "tool_result"
-     :tool_use_id id
-     :content (case name
-                "get_weather" (str "18°C in " (:city input)))}
-    (catch Exception e
-      {:type "tool_result" :tool_use_id id :is_error true :content (ex-message e)})))
+(def handlers
+  {"get_weather" (fn [{:keys [city]}] {:city city :celsius 18})})
 
-(defn converse [client body]
-  (let [message (claude/create client body)]
-    (if (= "tool_use" (:stop_reason message))
-      (let [calls (filter #(= "tool_use" (:type %)) (:content message))]
-        (recur client
-               (update body :messages conj
-                       {:role "assistant" :content (:content message)}
-                       {:role "user" :content (mapv run-tool calls)})))
-      message)))
+(def answer (tools/run client body handlers))    ; the final message
+(message/text answer)
 
-(converse client {:model "claude-opus-5-5" :max_tokens 16000 :tools tools
-                  :messages [{:role "user" :content "Weather in Paris?"}]})
+;; the whole conversation so far is on the answer's metadata; carry on from it
+(tools/run client
+           (message/say (:cl4cl.tools/body (meta answer)) "And in Oslo?")
+           handlers)
+
+;; every message of the loop, at most 10 requests
+(into [] (take 10) (tools/turns client body handlers))
 ```
 
-`:input` is a map with keyword keys. Return every tool's result in one user message. Report a failure with `:is_error true`; do not leave a result out.
+A handler gets `:input` as a map with keyword keys. A string or a vector of content blocks it returns is the result as it is; any other value is sent as JSON. If it throws, or the tool has no handler, Claude is told so with `:is_error true` and the loop goes on. The loop has no limit of its own: bound it with `take` on `tools/turns`, which is both reducible and seqable. It ends on any `:stop_reason` other than `"tool_use"` and `"pause_turn"`, so check for `"max_tokens"` and `"refusal"` as after `create`.
+
+For more control, each layer is public. `(tools/step client body handlers)` is one request plus its tool calls, and returns the message with the next body under `:cl4cl.tools/body` in its metadata; loop on it yourself while `(tools/pending? message)`. `(tools/results handlers message)` runs a message's calls and `(tools/call handlers tool-use)` runs one. Two options replace a part of the loop:
+
+```clojure
+(tools/run client body handlers
+  {:betas ["some-beta-2026-01-01"]          ; options for one call still apply
+   ;; stream each reply instead of waiting for it
+   :create (fn [client body opts]
+             (transduce (map show) stream/accumulate (claude/stream client body opts)))
+   ;; decide how calls are run: approval, parallelism, timeouts
+   :results (fn [handlers message]
+              (vec (pmap #(tools/call handlers %) (message/tool-uses message))))})
+```
 
 ## Message Batches
 
@@ -183,4 +199,4 @@ Every function takes a last argument of options that are not part of the body:
 
 ## Finding out more
 
-At a REPL, `(clojure.repl/dir cl4cl.core)` lists the functions and `(clojure.repl/doc cl4cl.core/stream)` shows one. The public namespaces are `cl4cl.core`, `cl4cl.stream`, `cl4cl.batches`, `cl4cl.error` and `cl4cl.json`.
+At a REPL, `(clojure.repl/dir cl4cl.core)` lists the functions and `(clojure.repl/doc cl4cl.core/stream)` shows one. The public namespaces are `cl4cl.core`, `cl4cl.message`, `cl4cl.tools`, `cl4cl.stream`, `cl4cl.batches`, `cl4cl.error` and `cl4cl.json`.

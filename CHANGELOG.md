@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Added
+- `cl4cl.tools`, the tool loop: `run` calls the API, runs the tools Claude asks for and sends the results back until it answers; `turns` gives every message of the loop; `step`, `pending?`, `results` and `call` are the layers underneath, for a caller who needs a different loop. The options `:create` and `:results` replace how a message is fetched and how tool calls are answered.
+- `cl4cl.message`, pure functions over messages and request bodies: `text`, `tool-uses`, `data`, `reply`, `say`, `image` and `document`.
+- `cl4cl.stream/text-deltas`, a transducer from stream events to their pieces of text.
 - Client option `:idle-timeout-ms` (default 600000): the longest a streaming call, `stream` or `batches/results`, waits for the reply to start or to continue. A stream that is silent for longer throws a `:cl4cl.error/connection` error. Before, a connection that went silent blocked the reducing thread for ever. `nil` restores that.
 - `cl4cl.http/idle-timeout`, which does the above for any open `InputStream`.
 ### Fixed

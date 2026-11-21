@@ -18,6 +18,15 @@
                  (throw (error/from-event payload))
                  payload)))))
 
+(defn text-deltas
+  "A transducer from event payloads to the pieces of text they carry, in
+  order. Everything that is not a text delta is dropped.
+
+    (run! print (eduction (text-deltas) (cl4cl.core/stream client body)))"
+  []
+  (keep #(when (= "text_delta" (get-in % [:delta :type]))
+           (get-in % [:delta :text]))))
+
 (defmulti apply-delta
   "Fold a content block delta into its block. Dispatches on the delta's
   :type; a type with no method leaves the block unchanged."

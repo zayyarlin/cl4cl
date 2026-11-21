@@ -15,6 +15,7 @@
             [cl4cl.dev.env :as env]
             [cl4cl.http :as http]
             [cl4cl.json :as json]
+            [cl4cl.tools :as tools]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
@@ -42,11 +43,14 @@
                   :properties {:title {:type "string"} :text {:type "string"}}
                   :required ["title" "text"]}})
 
+(def ^:private weather-handlers
+  {"get_weather" (fn [{:keys [city]}] (str "18°C and cloudy in " city))})
+
 (defn- prompt [text] [{:role "user" :content text}])
 
 (def scenarios
-  "What gets recorded. :op is :create, :stream, :count-tokens,
-  :batch-lifecycle or :batch-cancel."
+  "What gets recorded. :op is :create, :stream, :count-tokens, :tools,
+  :batch-lifecycle, :batch-cancel or :batch-retrieve."
   [{:name "create-text"
     :op :create
     :body {:model model :max_tokens 1024
@@ -81,6 +85,10 @@
            :messages [{:role "user" :content "Name a primary colour."}
                       {:role "assistant" :content [{:type "text" :text "Red"}]}
                       {:role "user" :content [{:type "text" :text "Another."}]}]}}
+   {:name "tools-run"
+    :op :tools
+    :body {:model model :max_tokens 1024 :tools [weather-tool]
+           :messages (prompt "Use the get_weather tool to check the weather in Paris and in Tokyo, then say which is warmer in one short sentence.")}}
    {:name "count-tokens"
     :op :count-tokens
     :body {:model model :tools [weather-tool]
@@ -135,6 +143,9 @@
                        {:events events
                         :message message
                         :block-meta (mapv #(not-empty (meta %)) (:content message))})
+       :tools        (let [turns (into [] (tools/turns client body weather-handlers))]
+                       {:turns turns
+                        :body (::tools/body (meta (peek turns)))})
        :batch-retrieve (batches/retrieve client body)
        :batch-lifecycle
        (let [created (batches/create client body)

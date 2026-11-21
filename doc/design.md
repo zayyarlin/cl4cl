@@ -26,7 +26,7 @@ The design question to ask is "what would Rich Hickey do?". In practice:
 | Keys | Wire names as keywords | Matches the API docs one to one; no translation layer |
 | `:stream` in a request body | The function owns it: `create` sends `false`, `stream` sends `true`, whatever the caller put there | One function, one return type; nothing to reject |
 | Timeout | Flat values in the client map, 10 minutes by default, with no scaling by `:max_tokens`: a total for non-streaming calls and an idle limit for streaming ones | Policy is visible data, not hidden arithmetic. Long outputs should stream, and a stream is long by nature but should never be silent for long. |
-| Tool-runner loop | Not in `cl4cl.core`. A later, separate namespace built only on the public API | A loop is policy on top of transport; keeping it apart keeps both simple |
+| Tool-runner loop | Not in `cl4cl.core`. `cl4cl.tools`, built only on the public API | A loop is policy on top of transport; keeping it apart keeps both simple |
 | Request validation | None | The API's 400 messages are the source of truth and stay current |
 
 Runtime dependencies are therefore Clojure and data.json only.
@@ -117,6 +117,8 @@ Callers continue a conversation by appending `{:role "assistant" :content (:cont
 |---|---|---|
 | `cl4cl.core` | Public API | |
 | `cl4cl.batches` | Message Batches, built only on `cl4cl.core`'s public functions | |
+| `cl4cl.message` | Reading a reply and building the next request body | Yes |
+| `cl4cl.tools` | The tool loop, built only on `cl4cl.core` and `cl4cl.message` | |
 | `cl4cl.http` | Send a request map; retry | No |
 | `cl4cl.json` | data.json read/write with the key rules below | Yes |
 | `cl4cl.sse` | Lines to `{:event ... :data ...}` | Yes |
@@ -158,6 +160,33 @@ data.json reads and writes recursively, and how deeply a tool input is nested is
 Streaming calls have no total timeout, because a long generation is normal. What is bounded is silence: the client's `:idle-timeout-ms` is the longest wait for the response to start and then for each further part of the body, and a stream that exceeds it throws a `:cl4cl.error/connection` error. Only waiting on the server is timed, so a caller that is slow to consume events is not idle.
 
 The JDK gives a blocking read of a response body no timeout, and the request timeout cannot stand in for one: from JDK 26 it covers the body as well as the headers, which would make it a limit on the whole stream. So `cl4cl.http/idle-timeout` wraps the body, and one daemon timer thread closes a body whose read has waited too long, which ends the read.
+
+## Helpers above the transport
+
+`cl4cl.core` is complete without them: anything below can be written by a caller with maps and a `loop`. They exist because every caller otherwise writes the same few lines, and gets the same few details wrong. A helper belongs in cl4cl if it is a pure function over wire data, or a loop that needs only the public API. One that needs a dependency, a global default or an opinion a reasonable caller would reject belongs in another library.
+
+Helpers are organised by what they operate on, not by who they are for. There is no "easy" namespace.
+
+**`cl4cl.message`** is pure. `text`, `tool-uses` and `data` read a message; `reply` and `say` append a turn to a request body; `image` and `document` build the two content blocks that need base64. Everything takes and returns the API's own shapes, so a caller can mix them with literal maps. There are no builders for anything a literal map says as clearly.
+
+**`cl4cl.tools`** is the loop, in layers that are each public:
+
+| Function | Is |
+|---|---|
+| `run` | the last of `turns` |
+| `turns` | `step` repeated while `pending?`, through `clojure.core/iteration`, so it is reducible and seqable |
+| `step` | one `create`, then `results` if the message stopped to use tools |
+| `results` | `call` for each `tool_use` block |
+| `call` | one handler, its return value or exception made into a `tool_result` block |
+
+The decisions:
+
+- **Handlers are a map from name to function, apart from the tool definitions.** The body stays exactly what goes on the wire, and a definition is not tied to one implementation.
+- **A turn is the message, as `create` returns it.** The body that continues the conversation is metadata on it, `:cl4cl.tools/body`, like the HTTP details. So `run` returns what `create` returns and the same code reads both.
+- **The loop follows `:stop_reason`.** `"tool_use"` runs the handlers, `"pause_turn"` sends the conversation back unchanged, anything else ends it. A tool call cut short by `max_tokens` is therefore never run.
+- **No limit, logging or cancellation options.** `turns` is a reducible, so those are `take`, `map` and `reduced`.
+- **Two functions can be replaced, `:create` and `:results`.** Streaming is a different `:create`; approval, parallelism and timeouts are a different `:results`. A harness that needs to change the conversation between turns calls `step` in its own loop. The convenient path and the escape hatches are the same functions.
+- **A handler failure is data for the model.** An `Exception` or an unknown name becomes a result with `:is_error true`, since every `tool_use` must be answered. `InterruptedException` is rethrown so that cancelling a thread works.
 
 ## Errors
 
@@ -298,8 +327,8 @@ Nothing can force an agent to look, so the pointer is repeated wherever one is l
 
 ## Scope
 
-**Done:** `client`, `request`, `response`, `execute`, `lines`, `create`, `stream`, `final-message`, `count-tokens`, Message Batches, errors, retries, beta headers.
+**Done:** `client`, `request`, `response`, `execute`, `lines`, `create`, `stream`, `final-message`, `count-tokens`, Message Batches, errors, retries, beta headers, the message helpers and the tool loop.
 
-**Later:** a tool-runner namespace, Files, the Models API. Until then `request` with `:path` reaches them.
+**Later:** Files, the Models API. Until then `request` with `:path` reaches them.
 
 **Not planned:** Bedrock, Vertex or Foundry clients.

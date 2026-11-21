@@ -4,7 +4,7 @@ Claude for Clojure: the Claude Messages API as functions over plain data.
 
 cl4cl talks to the API over raw HTTP. It needs Java 21 or later and has one dependency besides Clojure, `org.clojure/data.json`. Requests and responses are ordinary maps that mirror the API's JSON, so anything in the [API reference](https://platform.claude.com/docs/en/api/messages) works without waiting for a library release.
 
-Messages, streaming, token counting and Message Batches are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
+Messages, streaming, token counting, Message Batches and a tool loop are implemented. `doc/spec-checklist.md` lists every part of the API reference and whether it is covered.
 
 **Coding agents:** the usage guide ships inside the library and matches the installed version. Read it before writing code against cl4cl: `(println (cl4cl.core/guide))`.
 
@@ -122,11 +122,12 @@ Because the client is a map, a variant is one `assoc` away:
 (:usage message)         ;; => {:input_tokens 21 :output_tokens 180 ...}
 ```
 
-`:content` is a vector of blocks, and a reply can hold several kinds. To get the text:
+`:content` is a vector of blocks, and a reply can hold several kinds. `cl4cl.message/text` joins the text blocks and leaves the rest out:
 
 ```clojure
-(defn text [message]
-  (apply str (keep #(when (= "text" (:type %)) (:text %)) (:content message))))
+(require '[cl4cl.message :as message])
+
+(message/text message)   ;; => "A persistent data structure keeps its old versions..."
 ```
 
 Read `:stop_reason` before trusting `:content`:
@@ -202,12 +203,13 @@ Each event is the API's event payload as a map:
 
 ### Printing text as it arrives
 
+`(stream/text-deltas)` is a transducer that keeps only the pieces of text:
+
 ```clojure
-(run! (fn [event]
-        (when (= "text_delta" (get-in event [:delta :type]))
-          (print (get-in event [:delta :text]))
-          (flush)))
-      (claude/stream client body))
+(require '[cl4cl.stream :as stream])
+
+(run! (fn [piece] (print piece) (flush))
+      (eduction (stream/text-deltas) (claude/stream client body)))
 ```
 
 ### The finished message
@@ -223,8 +225,6 @@ Each event is the API's event payload as a map:
 `cl4cl.stream/accumulate` is the reducing function behind `final-message`. Combine it with any transducer to observe events on the way:
 
 ```clojure
-(require '[cl4cl.stream :as stream])
-
 (transduce (map (fn [event] (show event) event))
            stream/accumulate
            (claude/stream client body))
@@ -284,88 +284,127 @@ Deltas are applied by the multimethod `stream/apply-delta`, dispatched on the de
 
 ## Conversations
 
-The API is stateless: send the whole conversation each time. Append the reply's `:content` unchanged, then the next user turn.
+The API is stateless: send the whole conversation each time. Append the reply's `:content` unchanged, then the next user turn. `cl4cl.message` has a function for each:
 
 ```clojure
-(defn reply
-  "Add Claude's answer to a request body."
-  [body message]
-  (update body :messages conj {:role "assistant" :content (:content message)}))
-
-(defn say
-  "Add a user turn to a request body."
-  [body text]
-  (update body :messages conj {:role "user" :content text}))
-
 (let [body   {:model "claude-opus-5-5" :max_tokens 16000
               :messages [{:role "user" :content "Name a sorting algorithm."}]}
-      first-answer (claude/create client body)
-      body   (-> body (reply first-answer) (say "Why is it stable?"))]
-  (claude/create client body))
+      answer (claude/create client body)]
+  (claude/create client (-> body
+                            (message/reply answer)
+                            (message/say "Why is it stable?"))))
 ```
+
+`(message/reply body message)` appends `{:role "assistant" :content (:content message)}` and `(message/say body content)` appends `{:role "user" :content content}`. They are ordinary functions over the body map, and writing the maps yourself works as well.
 
 Pass `:content` back whole. Thinking blocks carry signatures the API checks, so do not edit, reorder or drop blocks from earlier turns.
 
-Content can be a string or a vector of blocks. Images and documents are blocks:
+Content can be a string or a vector of blocks. Images and documents are blocks, and `message/image` and `message/document` build them from bytes:
 
 ```clojure
-{:role "user"
- :content [{:type "image"
-            :source {:type "base64" :media_type "image/png" :data "iVBORw0..."}}
-           {:type "document"
-            :source {:type "base64" :media_type "application/pdf" :data "JVBERi0..."}}
-           {:type "text" :text "Compare the chart with the report."}]}
+(message/say body
+             [(message/image (java.nio.file.Files/readAllBytes chart-path) "image/png")
+              (message/document (java.nio.file.Files/readAllBytes report-path))   ; a PDF
+              {:type "text" :text "Compare the chart with the report."}])
+
+(message/image png-bytes "image/png")
+;; => {:type "image" :source {:type "base64" :media_type "image/png" :data "iVBORw0..."}}
 ```
+
+Other sources, such as `{:type "url" :url "..."}`, are written as maps.
 
 ## Tools
 
-Declare tools in the body. When Claude wants one, the reply has `:stop_reason "tool_use"` and one or more `tool_use` blocks. Run them, send every result back in a single user message, and repeat.
+Declare tools in the body. When Claude wants one, the reply has `:stop_reason "tool_use"` and one or more `tool_use` blocks; the caller runs them, sends every result back in a single user message, and asks again. `cl4cl.tools/run` does that until Claude answers.
 
 ```clojure
-(def weather-tool
-  {:name "get_weather"
-   :description "Get the current weather for a city."
-   :input_schema {:type "object"
-                  :properties {:city {:type "string" :description "City name"}}
-                  :required ["city"]}})
+(require '[cl4cl.tools :as tools])
 
-(defn run-tool
-  "The tool_result block for one tool_use block."
-  [{:keys [id name input]}]
-  (try
-    {:type "tool_result"
-     :tool_use_id id
-     :content (case name
-                "get_weather" (str "18°C and cloudy in " (:city input)))}
-    (catch Exception e
-      {:type "tool_result" :tool_use_id id :is_error true :content (ex-message e)})))
-
-(defn converse
-  "Call the API until Claude stops asking for tools. Returns the final message."
-  [client body]
-  (let [message (claude/create client body)]
-    (if (= "tool_use" (:stop_reason message))
-      (let [calls (filter #(= "tool_use" (:type %)) (:content message))]
-        (recur client
-               (update body :messages conj
-                       {:role "assistant" :content (:content message)}
-                       {:role "user" :content (mapv run-tool calls)})))
-      message)))
-
-(converse client
+(def body
   {:model "claude-opus-5-5"
    :max_tokens 16000
-   :tools [weather-tool]
+   :tools [{:name "get_weather"
+            :description "Get the current weather for a city."
+            :input_schema {:type "object"
+                           :properties {:city {:type "string" :description "City name"}}
+                           :required ["city"]}}]
    :messages [{:role "user" :content "Is it warmer in Paris or in Oslo?"}]})
+
+(def handlers
+  {"get_weather" (fn [{:keys [city]}] {:city city :celsius (lookup city)})})
+
+(def answer (tools/run client body handlers))
+(message/text answer)   ;; => "Paris is warmer: 18°C against 9°C in Oslo."
+```
+
+`handlers` maps a tool's name to a function of its input. The tool definitions stay in the body, exactly as the API documents them.
+
+What a handler does:
+
+- It receives `:input`, a map with keyword keys. Keys round-trip exactly, including unusual ones such as `"a/b"`.
+- A string it returns is the result. So is a vector of content blocks, for a tool that returns an image. Any other value is sent as JSON.
+- If it throws an `Exception`, Claude gets a result with `:is_error true` and the exception's message, and the loop goes on. The same happens for a tool with no handler.
+
+### Carrying on
+
+The message `run` returns has the whole conversation, itself included, as a request body in its metadata. Add the next user turn to it:
+
+```clojure
+(def body-so-far (:cl4cl.tools/body (meta answer)))
+
+(tools/run client (message/say body-so-far "And in Rome?") handlers)
+```
+
+### Every turn
+
+`(tools/turns client body handlers)` gives every message of the loop, from the first reply to the answer. It is both reducible and seqable, and nothing is sent until it is consumed. The loop has no limit of its own, so this is where to set one:
+
+```clojure
+;; at most 10 requests, printing why each stopped
+(into []
+      (comp (take 10) (map (fn [message] (println (:stop_reason message)) message)))
+      (tools/turns client body handlers))
+```
+
+The loop goes on while `:stop_reason` is `"tool_use"` or `"pause_turn"`, which `tools/pending?` tests, and ends on anything else. Check the final message's `:stop_reason` as after `create`: a tool call cut short by `"max_tokens"` is not run.
+
+### Streaming, approval, parallel calls
+
+Two options replace a part of the loop. The rest of the options map goes to each API call, so `:betas`, `:timeout-ms` and `:headers` work as they do for `create`.
+
+```clojure
+(tools/run client body handlers
+  {;; :create gets the message for a body. Here it streams, printing as it goes.
+   :create  (fn [client body opts]
+              (transduce (map (fn [event] (show event) event))
+                         stream/accumulate
+                         (claude/stream client body opts)))
+   ;; :results answers a message's tool calls. Here it runs them in parallel.
+   :results (fn [handlers message]
+              (vec (pmap #(tools/call handlers %) (message/tool-uses message))))})
+```
+
+`(tools/call handlers tool-use)` turns one `tool_use` block into its `tool_result` block, so a `:results` function that asks for approval, adds a timeout or needs the call's `:id` wraps it or replaces it. It must return one result for every `tool_use` block.
+
+### Your own loop
+
+A harness that changes the conversation between turns, to trim it, persist it or add a message, calls `tools/step` itself. A step is one request and its tool calls; it returns the message, with the body for the next request in its metadata.
+
+```clojure
+(loop [body body]
+  (let [message (tools/step client body handlers)
+        next-body (:cl4cl.tools/body (meta message))]
+    (save! next-body)
+    (if (tools/pending? message)
+      (recur (trim next-body))
+      message)))
 ```
 
 Things to know:
 
-- `:input` is already a map with keyword keys. Keys round-trip exactly, including unusual ones such as `"a/b"`.
-- One reply may hold several `tool_use` blocks. Return all their results in one user message.
-- Report a failed tool with `:is_error true` rather than leaving its result out.
-- Server tools (web search, code execution and others) are declared the same way in `:tools`, for example `{:type "web_search_20260209" :name "web_search"}`. Their results come back as blocks in the reply; there is nothing for you to run.
-- cl4cl does not ship a tool loop. The one above is the whole pattern.
+- One reply may hold several `tool_use` blocks. All their results go back in one user message, and a failed tool is reported with `:is_error true`, never left out.
+- Server tools (web search, code execution and others) are declared the same way in `:tools`, for example `{:type "web_search_20260209" :name "web_search"}`. Their results come back as blocks in the reply; there is nothing to run and they need no handler. If a long server-side turn pauses, the loop sends the conversation back to continue it.
+- The loop is built only on public functions. `(message/tool-uses message)` gives the `tool_use` blocks if you want to write it another way.
 
 ## Thinking, caching and structured output
 
@@ -388,7 +427,7 @@ These are all request data. A few common ones:
                                    :additionalProperties false}}}}
 ```
 
-Parse structured output with `cl4cl.json/read-str`, which gives keyword keys.
+`(message/data message)` reads the reply's text as JSON with keyword keys. It throws if the text is not JSON, as after a refusal or a reply cut off by `:max_tokens`, so check `:stop_reason` first.
 
 Which options a model accepts varies by model. The API answers an unsupported one with a 400 whose message says what to change; cl4cl surfaces that message and does not second-guess it.
 
@@ -587,11 +626,37 @@ To use a different HTTP client, a proxy or request signing, do the sending yours
 | `defaults` | The default client settings |
 | `(guide)` | The usage guide for the installed version, as markdown text |
 
+**`cl4cl.message`**, pure functions over messages and request bodies
+
+| Function | Does |
+|---|---|
+| `(text message)` | The message's text blocks, joined |
+| `(tool-uses message)` | Its `tool_use` blocks, as a vector |
+| `(data message)` | Its text read as JSON, for structured output |
+| `(reply body message)` | The body with the message appended as an assistant turn |
+| `(say body content)` | The body with a user turn appended |
+| `(image bytes media-type)` | An image content block |
+| `(document bytes)` | A PDF document content block |
+
+**`cl4cl.tools`**
+
+| Function | Does |
+|---|---|
+| `(run client body handlers)` `(… opts)` | The tool loop; returns the final message |
+| `(turns client body handlers)` `(… opts)` | Every message of the loop; reducible and seqable |
+| `(step client body handlers)` `(… opts)` | One request and its tool calls; the next body is in the message's metadata under `:cl4cl.tools/body` |
+| `(pending? message)` | Does the loop go on after this message? |
+| `(results handlers message)` | The `tool_result` blocks for a message's tool calls |
+| `(call handlers tool-use)` | The `tool_result` block for one `tool_use` block |
+
+`opts` are the per-call options, plus `:create` and `:results` to replace how a message is fetched and how tool calls are answered.
+
 **`cl4cl.stream`**
 
 | Function | Does |
 |---|---|
 | `accumulate` | Reducing function from events to a message |
+| `(text-deltas)` | Transducer from events to their pieces of text |
 | `(payloads)` | Transducer from SSE lines to events |
 | `apply-delta` | Multimethod `[block delta]`, dispatched on the delta's `:type` |
 

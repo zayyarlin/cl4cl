@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 cl4cl ("Claude for Clojure") is a pure Clojure client for the Claude Messages API over raw HTTP: no Java SDK, and only `java.net.http` plus `org.clojure/data.json` at runtime. `doc/design.md` is the design and must be read before changing library code.
 
-Only `cl4cl.http` touches the network. `cl4cl.core/request` and `response` are pure, and `execute` and `lines` do the sending, and every endpoint function (`create`, `count-tokens`, `stream`, everything in `cl4cl.batches`) is a one-line composition of those; `cl4cl.sse`, `cl4cl.stream`, `cl4cl.json` and `cl4cl.error` are pure data transformations.
+Only `cl4cl.http` touches the network. `cl4cl.core/request` and `response` are pure, and `execute` and `lines` do the sending, and every endpoint function (`create`, `count-tokens`, `stream`, everything in `cl4cl.batches`) is a one-line composition of those; `cl4cl.sse`, `cl4cl.stream`, `cl4cl.message`, `cl4cl.json` and `cl4cl.error` are pure data transformations. `cl4cl.tools` is the tool loop, built only on the public functions of `cl4cl.core` and `cl4cl.message`.
 
 ## Design principle
 
@@ -59,7 +59,7 @@ Agents working in other projects learn cl4cl from two places that ship in the ja
 - `resources/cl4cl/guide.md`: the relevant example, and the "Mistakes to avoid" list if the change creates or removes a pitfall
 - `README.md`, including its function reference
 
-`cl4cl.guide-test` enforces part of this: every public var has a docstring, the guide mentions every function in `cl4cl.core` and `cl4cl.batches`, names nothing that does not exist, and its examples are readable Clojure. It cannot tell whether the prose is still true, so read the guide section you touched. The guide is for a reader with no access to this repository: keep it self-contained and under about 200 lines.
+`cl4cl.guide-test` enforces part of this: every public var has a docstring, the guide mentions every function in `cl4cl.core`, `cl4cl.message`, `cl4cl.tools` and `cl4cl.batches`, names nothing that does not exist, and its examples are readable Clojure. It cannot tell whether the prose is still true, so read the guide section you touched. The guide is for a reader with no access to this repository: keep it self-contained and under about 200 lines.
 
 ## Releasing
 
